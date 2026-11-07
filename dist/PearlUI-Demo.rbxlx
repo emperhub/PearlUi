@@ -4500,6 +4500,8 @@ function Window:_colorPopup(control)
 	self:_skin(done, "BackgroundColor3", "Field"); self:_skin(done, "TextColor3", "Text"); self:_border(done, FIELD_RADIUS); self:_feedback(done)
 	self:_connect(done.Activated, function() if self._popup == menu then self:_closeMenu() end end)
 	local function ratio(object, x, y)
+		local inset = self.Gui.IgnoreGuiInset and Vector2.zero or GuiService:GetGuiInset()
+		x, y = x - inset.X, y - inset.Y
 		return math.clamp((x - object.AbsolutePosition.X) / math.max(1, object.AbsoluteSize.X), 0, 1), math.clamp((y - object.AbsolutePosition.Y) / math.max(1, object.AbsoluteSize.Y), 0, 1)
 	end
 	local function updateSV(x, y)
