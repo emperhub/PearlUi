@@ -182,7 +182,11 @@ function Control:_cancelInteraction()
 	local selected = GuiService.SelectedObject
 	if selected and selected:IsDescendantOf(self.Row) then
 		GuiService.SelectedObject = nil
-		if window.Visible and not window.Minimized then window:_later(0,function() if not window.Destroyed then window:_chooseFocus(window.ActiveTab and window.ActiveTab.Page or window.Main) end end) end
+		if window.Visible and not window.Minimized then window:_later(0,function()
+			if not window.Destroyed and window.Visible and not window.Minimized and not GuiService.SelectedObject then
+				window:_chooseFocus(window._confirmation and window._confirmation.Root or window._popup or (window.ActiveTab and window.ActiveTab.Page) or window.Main)
+			end
+		end) end
 	end
 	if window._popupOwner == self or (window._popupAnchor and window._popupAnchor:IsDescendantOf(self.Row)) then window:_closeMenu() end
 	if window._slider and window._slider.control == self then
