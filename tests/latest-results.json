@@ -1,0 +1,51 @@
+{
+  "version": "0.8.0",
+  "date": "2026-11-07",
+  "environment": "Connected Roblox client",
+  "scope": "Interactive showcase; core implementation unchanged except version",
+  "suites": {
+    "Showcase.spec.luau": 45
+  },
+  "passed": 45,
+  "failed": 0,
+  "publicAPIs": 76,
+  "initialTabs": 7,
+  "initialSections": 14,
+  "initialControls": 102,
+  "coreBaseline": {
+    "version": "0.7.0",
+    "passed": 424,
+    "suites": {
+      "Runtime.spec.luau": 50,
+      "Animation.spec.luau": 18,
+      "Dock.spec.luau": 16,
+      "Features.spec.luau": 52,
+      "FeatureMotion.spec.luau": 6,
+      "ColumnsProfile.spec.luau": 32,
+      "Audit.spec.luau": 40,
+      "DetachedGeometry.spec.luau": 23,
+      "NotificationDock.spec.luau": 20,
+      "Themes.spec.luau": 59,
+      "Settings.spec.luau": 38,
+      "FileStorage.spec.luau": 11,
+      "PersistenceServer.spec.luau": 14,
+      "Configs.spec.luau": 45
+    }
+  },
+  "compiler": "Luau 0.745",
+  "native_ui": [
+    "Components page inspected with callback and value output"
+  ],
+  "integration": [
+    "Existing user configs preserved",
+    "Sample lifecycle and memory storage remain isolated",
+    "All 76 public API paths are mapped in docs/ShowcaseAPI.json"
+  ],
+  "limitations": [
+    "Core baseline suites were not rerun for this demo-only change",
+    "Not all manual interaction combinations tested",
+    "Physical touch/gamepad not tested",
+    "Published DataStore not tested",
+    "Generated Studio XML not reopened in Studio"
+  ]
+}

@@ -1,0 +1,385 @@
+{
+  "version": "0.8.0",
+  "methods": {
+    "ColorPicker.Get": {
+      "signature": "picker:Get()",
+      "returns": "Color3, number",
+      "contract": "Color plus alpha. Use Serialize for a JSON-safe representation."
+    },
+    "ColorPicker.Open": {
+      "signature": "picker:Open()",
+      "returns": "self",
+      "contract": "Open SV/hue/alpha and HEX/RGB editor if interactive and visible."
+    },
+    "ColorPicker.SetAlpha": {
+      "signature": "picker:SetAlpha(alpha, silent?)",
+      "returns": "self",
+      "contract": "Alpha in [0,1], optional silent. Preserve current HEX."
+    },
+    "ColorPicker.SetHSV": {
+      "signature": "picker:SetHSV(h, s, v, silent?)",
+      "returns": "self",
+      "contract": "All channels finite in [0,1], optional silent; validates all channels before applying."
+    },
+    "Control.CanInteract": {
+      "signature": "Control:CanInteract()",
+      "returns": "boolean",
+      "contract": "Own destroyed/disabled/visible/row state. Not a complete ancestor visibility or clipping check."
+    },
+    "Control.Close": {
+      "signature": "Control:Close()",
+      "returns": "self",
+      "contract": "Close an owned dropdown/color editor if open."
+    },
+    "Control.Destroy": {
+      "signature": "Control:Destroy()",
+      "returns": "nil",
+      "contract": "Idempotent removal, listener/tween cleanup and Id release. Rebuild with the same Id after destruction."
+    },
+    "Control.Get": {
+      "signature": "Control:Get()",
+      "returns": "value copy",
+      "contract": "Defensive copy for table values. ColorPicker overrides this to return Color3,alpha."
+    },
+    "Control.OnChanged": {
+      "signature": "Control:OnChanged(callback)",
+      "returns": "self",
+      "contract": "Replace callback; nil removes it. This is one callback slot, not an event subscription list."
+    },
+    "Control.Serialize": {
+      "signature": "Control:Serialize() return deepCopy(self.Value)",
+      "returns": "JSON-safe value",
+      "contract": "ColorPicker returns {Hex,Alpha}; multi-dropdown returns an array. Never serialize GUI instances."
+    },
+    "Control.Set": {
+      "signature": "Control:Set(value, silent)",
+      "returns": "self",
+      "contract": "Validate, store and render. Callback fires unless silent=true; works while disabled. Destroyed controls reject setters."
+    },
+    "Control.SetDisabled": {
+      "signature": "Control:SetDisabled(disabled, reason)",
+      "returns": "self",
+      "contract": "Boolean plus optional reason. Blocks native input and cancels owned popup/capture/drag; setters still work."
+    },
+    "Control.SetLabel": {
+      "signature": "Control:SetLabel(value)",
+      "returns": "self",
+      "contract": "Change presentation without changing Id; refresh search matching."
+    },
+    "Control.SetVisible": {
+      "signature": "Control:SetVisible(visible)",
+      "returns": "self",
+      "contract": "Hide/show while respecting search. Hiding closes owned interactions."
+    },
+    "Dropdown.Open": {
+      "signature": "dropdown:Open()",
+      "returns": "self",
+      "contract": "Open if enabled and in a visible window/page; multi selection stays open until Done/Close."
+    },
+    "Dropdown.SetOptions": {
+      "signature": "dropdown:SetOptions(entries, default?, silent?)",
+      "returns": "self",
+      "contract": "Validate new options before mutation; retain valid selections unless default supplied. Third argument silent suppresses callback."
+    },
+    "PearlUI.GetThemes": {
+      "signature": "PearlUI.GetThemes()",
+      "returns": "string[]",
+      "contract": "Ordered defensive copy: Light, Dark, Midnight, Graphite, Lavender, Rose, Matcha, Ocean, Forest."
+    },
+    "PearlUI.new": {
+      "signature": "PearlUI.new(options)",
+      "returns": "Window",
+      "contract": "Client constructor; LocalScript or explicit Parent. Enum KeyCode for constructor ToggleKey. See constructor/default tables."
+    },
+    "Section.Button": {
+      "signature": "Section:Button(options)",
+      "returns": "Control",
+      "contract": "Text='Run', Primary=false. Callback() on activation. No persistence Id/value contract."
+    },
+    "Section.ColorPicker": {
+      "signature": "Section:ColorPicker(options)",
+      "returns": "Control",
+      "contract": "Default current accent, Alpha=1. Accept Color3, HEX or {Hex,Alpha}; callback receives Color3,alpha."
+    },
+    "Section.Detach": {
+      "signature": "Section:Detach()",
+      "returns": "nil",
+      "contract": "Move card to a floating window, resetting card origin/canvas. Already detached reveals it."
+    },
+    "Section.Dock": {
+      "signature": "Section:Dock()",
+      "returns": "nil",
+      "contract": "Return content synchronously to its own page; fade empty floating shell independently."
+    },
+    "Section.Dropdown": {
+      "signature": "Section:Dropdown(options)",
+      "returns": "Control",
+      "contract": "Required nonempty unique string Options. Multi=false, Searchable=true. Scalar or ordered array value."
+    },
+    "Section.Input": {
+      "signature": "Section:Input(options)",
+      "returns": "Control",
+      "contract": "Default empty string; MaxLength=128 UTF-8 characters, Placeholder='Enter text'. Commits on focus loss."
+    },
+    "Section.Keybind": {
+      "signature": "Section:Keybind(options)",
+      "returns": "Control",
+      "contract": "Default RightShift. Callback(string key name) for changes; OnPressed(Enum.KeyCode) for activation."
+    },
+    "Section.Label": {
+      "signature": "Section:Label(options)",
+      "returns": "Control",
+      "contract": "String shorthand or {Label,Value}; Value defaults empty. Get/Set useful for result labels; no persistence Id."
+    },
+    "Section.Reveal": {
+      "signature": "Section:Reveal()",
+      "returns": "self",
+      "contract": "Reveal/focus detached panel, restoring hidden/minimized main window; detaches if needed."
+    },
+    "Section.Slider": {
+      "signature": "Section:Slider(options)",
+      "returns": "Control",
+      "contract": "Finite numeric Min/Max/Step; defaults 0/100/1; clamped and quantized value, Callback(number)."
+    },
+    "Section.Toggle": {
+      "signature": "Section:Toggle(options)",
+      "returns": "Control",
+      "contract": "Boolean Default=false; Callback(boolean)."
+    },
+    "Tab.Section": {
+      "signature": "Tab:Section(options)",
+      "returns": "Section",
+      "contract": "String or {Title, Id, Column}. Stable unique Id; Column Left/Right, alternating by default."
+    },
+    "Window.CaptureDefaults": {
+      "signature": "Window:CaptureDefaults()",
+      "returns": "self",
+      "contract": "Capture current profile after building UI and before loading user state. Named Default profile is separate."
+    },
+    "Window.ConfigurePersistence": {
+      "signature": "Window:ConfigurePersistence(options)",
+      "returns": "boolean, loaded-or-error",
+      "contract": "Adapter Load/Save, Key required; AutoSave=true, Load=true, Debounce=1.5, optional OnStatus. Configure after CaptureDefaults."
+    },
+    "Window.Confirm": {
+      "signature": "Window:Confirm(options)",
+      "returns": "handle",
+      "contract": "Title/Description/ConfirmText/OnConfirm/OnCancel. Optional Text, ReadOnly and Validate for editor. Handle Confirm/Cancel complete once; Editor/ErrorLabel available for inspection."
+    },
+    "Window.CreateConfig": {
+      "signature": "Window:CreateConfig(name)",
+      "returns": "boolean, name-or-error",
+      "contract": "Capture current profile under a new normalized name; set active; reject duplicates/capacity overflow."
+    },
+    "Window.DeleteConfig": {
+      "signature": "Window:DeleteConfig(name)",
+      "returns": "boolean, name-or-error",
+      "contract": "Remove snapshot, clear matching references; do not reset current values. UI wraps this with confirmation."
+    },
+    "Window.Destroy": {
+      "signature": "Window:Destroy()",
+      "returns": "nil",
+      "contract": "Idempotent teardown; attempt final auto-save, cancel jobs/tweens/listeners, dispose both ScreenGuis. Showcase also disposes its sample."
+    },
+    "Window.DisablePersistence": {
+      "signature": "Window:DisablePersistence(flush)",
+      "returns": "nil",
+      "contract": "flush=true attempts SaveSettings first; false disconnects without a write. Cancels its watcher."
+    },
+    "Window.ExportConfig": {
+      "signature": "Window:ExportConfig(name)",
+      "returns": "JSON-or-nil, error?",
+      "contract": "One versioned PearlUIConfig envelope with Name, Scope and Profile, not all configs."
+    },
+    "Window.ExportLayout": {
+      "signature": "Window:ExportLayout() return HttpService:JSONEncode(self:GetLayout())",
+      "returns": "JSON string",
+      "contract": "Encode GetLayout for transfer/storage."
+    },
+    "Window.ExportProfile": {
+      "signature": "Window:ExportProfile()",
+      "returns": "JSON string",
+      "contract": "Version=1, Values, Appearance and Layout. Persist=false controls and destroyed controls are excluded."
+    },
+    "Window.GetConfigStatus": {
+      "signature": "Window:GetConfigStatus()",
+      "returns": "table",
+      "contract": "Scope, Active, AutoLoad, Dirty, Count. Manager fields and transient tab/visibility changes do not create edited status."
+    },
+    "Window.GetLayout": {
+      "signature": "Window:GetLayout()",
+      "returns": "table",
+      "contract": "Version=1 layout with Window, Dock, Panels and ActiveTab; normalized positions, no GUI objects."
+    },
+    "Window.GetPersistenceStatus": {
+      "signature": "Window:GetPersistenceStatus()",
+      "returns": "status, error?",
+      "contract": "Disabled, Ready, Loading, Unsaved, Saving, Saved or Error."
+    },
+    "Window.ImportConfig": {
+      "signature": "Window:ImportConfig(name,json,overwrite)",
+      "returns": "boolean, name-or-error",
+      "contract": "Save a validated copy into current scope without applying; overwrite=true explicitly replaces an exact name."
+    },
+    "Window.ImportLayout": {
+      "signature": "Window:ImportLayout(value)",
+      "returns": "boolean, error?",
+      "contract": "Validate table or JSON before applying window, tab, panel and dock geometry."
+    },
+    "Window.ImportProfile": {
+      "signature": "Window:ImportProfile(json)",
+      "returns": "boolean, error?",
+      "contract": "Validate known control values/appearance/layout before applying; legacy AccentMode omission retains custom-color behavior."
+    },
+    "Window.ListConfigs": {
+      "signature": "Window:ListConfigs()",
+      "returns": "string[]",
+      "contract": "Sorted defensive list for current scope."
+    },
+    "Window.LoadConfig": {
+      "signature": "Window:LoadConfig(name)",
+      "returns": "boolean, name-or-error",
+      "contract": "Apply named profile and set active only on success."
+    },
+    "Window.LoadProfile": {
+      "signature": "Window:LoadProfile(name)",
+      "returns": "boolean, error?",
+      "contract": "Legacy raw named-profile apply. Prefer LoadConfig for active-config tracking."
+    },
+    "Window.LoadSettings": {
+      "signature": "Window:LoadSettings()",
+      "returns": "boolean, exists-or-error",
+      "contract": "Load/validate current game bank and named configs; selected auto-load overrides last working setup. Failed load blocks writes."
+    },
+    "Window.Notify": {
+      "signature": "Window:Notify(options)",
+      "returns": "toast slot or nil",
+      "contract": "String shorthand or {Title,Description,Duration,Preview}. Disabled preference suppresses ordinary notifications; Preview=true bypasses it without changing preference."
+    },
+    "Window.OnConfigsChanged": {
+      "signature": "Window:OnConfigsChanged(callback)",
+      "returns": "Disconnect handle",
+      "contract": "Observe list/metadata changes. This is not a callback for every control edit."
+    },
+    "Window.RefreshUserProfile": {
+      "signature": "Window:RefreshUserProfile()",
+      "returns": "nil",
+      "contract": "Refresh LocalPlayer display name, username and AvatarBust thumbnail, with fallback/token guards."
+    },
+    "Window.RenameConfig": {
+      "signature": "Window:RenameConfig(name, replacement)",
+      "returns": "boolean, name-or-error",
+      "contract": "Move snapshot; update active/auto-load references; preserve current values."
+    },
+    "Window.RequestReset": {
+      "signature": "Window:RequestReset(scope)",
+      "returns": "confirmation handle",
+      "contract": "Same scopes, with an in-product confirmation before application."
+    },
+    "Window.Reset": {
+      "signature": "Window:Reset(scope)",
+      "returns": "boolean, error?",
+      "contract": "Apply captured Appearance/Controls/Layout/All immediately; requires CaptureDefaults and keeps named configs."
+    },
+    "Window.ResetAccent": {
+      "signature": "Window:ResetAccent()",
+      "returns": "self",
+      "contract": "Return to Theme mode; later themes follow their own accents. Demo also synchronizes its picker."
+    },
+    "Window.RevealDock": {
+      "signature": "Window:RevealDock(immediate)",
+      "returns": "nil",
+      "contract": "Reveal expanded dock from edge; immediate=true skips its travel tween. Does not open main by itself."
+    },
+    "Window.SaveConfig": {
+      "signature": "Window:SaveConfig(name)",
+      "returns": "boolean, name-or-error",
+      "contract": "Update existing named snapshot from current setup and set active. Does not mean adapter has already acknowledged disk save."
+    },
+    "Window.SaveProfile": {
+      "signature": "Window:SaveProfile(name)",
+      "returns": "JSON string",
+      "contract": "Legacy named save in current scope; uses storage-budget checks. With persistence configured it survives through the settings envelope."
+    },
+    "Window.SaveSettings": {
+      "signature": "Window:SaveSettings()",
+      "returns": "boolean, error?",
+      "contract": "Save latest current setup and banks only after acknowledged adapter write; skip unchanged snapshot."
+    },
+    "Window.SelectTab": {
+      "signature": "Window:SelectTab(tab)",
+      "returns": "nil",
+      "contract": "Tab object belonging to window or known name; closes menu and updates active page/search."
+    },
+    "Window.SetAccent": {
+      "signature": "Window:SetAccent(color)",
+      "returns": "nil",
+      "contract": "Color3 sets Custom accent mode. nil restores the selected theme's accent."
+    },
+    "Window.SetAutoLoadConfig": {
+      "signature": "Window:SetAutoLoadConfig(name)",
+      "returns": "boolean, name-or-error",
+      "contract": "Known name selects startup snapshot; nil clears it for this scope."
+    },
+    "Window.SetColumns": {
+      "signature": "Window:SetColumns(columns)",
+      "returns": "nil",
+      "contract": "Only 1 or 2. Effective columns may collapse to one for a narrow viewport."
+    },
+    "Window.SetMaximized": {
+      "signature": "Window:SetMaximized(maximized)",
+      "returns": "nil",
+      "contract": "Maximize/restore while remembering prior position/size."
+    },
+    "Window.SetMinimized": {
+      "signature": "Window:SetMinimized(minimized)",
+      "returns": "nil",
+      "contract": "Minimize/restore; separate from Visible and from dock stow side."
+    },
+    "Window.SetOpacity": {
+      "signature": "Window:SetOpacity(value)",
+      "returns": "nil",
+      "contract": "Finite number, clamped to [0.75,1], including surfaces with a visibility transition."
+    },
+    "Window.SetScale": {
+      "signature": "Window:SetScale(value)",
+      "returns": "nil",
+      "contract": "Finite desired scale clamped to [0.65,1.3]; actual fit scale may be smaller."
+    },
+    "Window.SetSize": {
+      "signature": "Window:SetSize(width, height)",
+      "returns": "nil",
+      "contract": "Finite width/height; rounded, clamped to 680x420..1440x1000, with viewport fitting."
+    },
+    "Window.SetTheme": {
+      "signature": "Window:SetTheme(theme)",
+      "returns": "nil",
+      "contract": "Name from GetThemes. Repaint all bound roles while preserving a custom accent override."
+    },
+    "Window.SetToggleKey": {
+      "signature": "Window:SetToggleKey(key)",
+      "returns": "nil",
+      "contract": "Enum.KeyCode or key-name string; updates footer. Constructor itself expects an Enum.KeyCode."
+    },
+    "Window.SetVisible": {
+      "signature": "Window:SetVisible(visible)",
+      "returns": "nil",
+      "contract": "Show/hide main and detached panels; hidden main leaves the dock available."
+    },
+    "Window.StowDock": {
+      "signature": "Window:StowDock(side)",
+      "returns": "nil",
+      "contract": "Left or Right; hides dock offscreen with recovery handle, retaining height."
+    },
+    "Window.Tab": {
+      "signature": "Window:Tab(options)",
+      "returns": "Tab",
+      "contract": "String or {Name, Description, Icon}. Adds sidebar and dock entries; first tab is selected."
+    },
+    "Window.ValidateConfig": {
+      "signature": "Window:ValidateConfig(json)",
+      "returns": "boolean, error?",
+      "contract": "Validate package or legacy profile JSON without applying or storing it."
+    }
+  }
+}

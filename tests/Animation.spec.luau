@@ -1,0 +1,76 @@
+--!nocheck
+return function(PearlUI)
+	local window = PearlUI.new({ Name = "PearlUIAnimationTest", AnimationSpeed = 0.12 })
+	local checks = {}
+	local function check(name, condition) assert(condition, "FAILED: " .. name); table.insert(checks, name) end
+	local function settle() task.wait(0.22) end
+	local ok, result = pcall(function()
+		local first, second = window:Tab("First"), window:Tab("Second")
+		local section = first:Section("Animated")
+		local toggle = section:Toggle({ Id = "toggle", Label = "Toggle" })
+		local slider = section:Slider({ Id = "slider", Label = "Slider", Default = 20 })
+		local dropdown = section:Dropdown({ Id = "dropdown", Label = "Dropdown", Options = { "A", "B" } })
+		second:Section("Other"):Label({ Label = "Other page" })
+		settle()
+		check("entry opacity settles", math.abs(window.Main.Shell.BackgroundTransparency - 0.03) < 0.001)
+		check("entry state cleaned", window._visibility[window.Main] == nil)
+		local callbacks = 0
+		local line = window.Main.WindowOutline:FindFirstChildOfClass("UIStroke")
+		window:_tween(line, { Thickness = 3 }, 1, function() callbacks += 100 end)
+		task.wait(0.025)
+		window:_tween(line, { Thickness = 1 }, 1, function() callbacks += 1 end)
+		settle()
+		check("retarget cancels stale callback", callbacks == 1 and line.Thickness == 1)
+		local colorGoal = Color3.fromRGB(120, 70, 190)
+		window:_tween(line, { Color = colorGoal, Thickness = 4 })
+		task.wait(0.025); window:_tween(line, { Thickness = 1 }); settle()
+		check("retarget preserves unrelated animation goals", math.abs(line.Color.R - colorGoal.R) + math.abs(line.Color.G - colorGoal.G) + math.abs(line.Color.B - colorGoal.B) < 0.0001 and line.Thickness == 1)
+		window:SetVisible(false); task.wait(0.025)
+		check("exit animates before hiding", not window.Visible and window.Main.Visible)
+		window:SetVisible(true); settle()
+		check("rapid hide show restores opacity", window.Main.Visible and not window.Dock.Visible and math.abs(window.Main.Shell.BackgroundTransparency - 0.03) < 0.001)
+		window:SetVisible(false); settle()
+		check("exit eventually hides", not window.Main.Visible and window.Dock.Visible)
+		window:SetOpacity(0.9)
+		window:SetVisible(true); settle()
+		check("opacity changes while hidden are preserved", math.abs(window.Main.Shell.BackgroundTransparency - 0.1) < 0.001)
+		window:SetOpacity(0.97); settle()
+		window:SelectTab(second); task.wait(0.02); window:SelectTab(first); settle()
+		check("rapid tab switch keeps one page", first.Page.Visible and not second.Page.Visible and first.Page.Position == UDim2.new())
+		window:SetTheme("Dark"); settle()
+		local actual, expected = window.Main.Shell.BackgroundColor3, window.Palette.Window
+		check("theme colors reach target", math.abs(actual.R - expected.R) + math.abs(actual.G - expected.G) + math.abs(actual.B - expected.B) < 0.0001)
+		slider:Set(85); settle()
+		check("programmatic slider reaches target", math.abs(slider.Row.Slider.Rail.Fill.Size.X.Scale - 0.85) < 0.001 and math.abs(slider.Row.Slider.Rail.Thumb.Position.X.Scale - 0.85) < 0.001)
+		local field = dropdown.Row.Dropdown
+		window:_popupMenu(field, { "A", "B" }, "A", function() end)
+		local oldMenu = window._popup
+		task.wait(0.025); window:_closeMenu()
+		window:_popupMenu(field, { "A", "B" }, "B", function() end)
+		local newMenu = window._popup
+		settle()
+		check("closing menu cannot destroy reopened menu", oldMenu.Parent == nil and newMenu.Parent ~= nil and window._popup == newMenu)
+		window:_closeMenu(); settle()
+		section:Detach(); settle()
+		section:Dock(); task.wait(0.025); section:Detach(); settle()
+		check("rapid dock detach preserves panel", section.Detached and section.Frame.Parent == section.FloatScroll and section.Frame.ZIndex == 48)
+		section:Dock(); window:SetVisible(false); settle()
+		check("dock completes while window hides", not section.Detached and section.Frame.Parent == first.Page and not section.Float.Visible)
+		window:SetVisible(true); settle()
+		window:SetMaximized(true); task.wait(0.025); window:SetMaximized(false); settle()
+		check("rapid maximize restores size", window.Main.Size == UDim2.fromOffset(window.WindowSize.X, window.WindowSize.Y))
+		window:Notify({ Title = "Animated toast", Duration = 0.05 }); task.wait(0.3)
+		check("toast exits and releases slot", window.Notifications:FindFirstChild("Toast") == nil)
+		window:SetVisible(false); task.wait(0.02)
+		window.ReduceMotion = true; window:SetVisible(true)
+		check("reduce motion interrupts animation safely", window.Main.Visible and window._visibility[window.Main] == nil and math.abs(window.Main.Shell.BackgroundTransparency - 0.03) < 0.001)
+		window.ReduceMotion = false
+		window:Notify({ Title = "Pending", Duration = 30 }); window:SetVisible(false)
+		window:Destroy(); task.wait(0.15)
+		check("destroy cancels animation jobs", next(window._jobs) == nil and next(window._tweens) == nil and next(window._visibility) == nil)
+		return { passed = #checks, checks = checks }
+	end)
+	window:Destroy()
+	if not ok then error(result) end
+	return result
+end

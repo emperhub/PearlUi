@@ -1,0 +1,4 @@
+interface:
+  display_name: "PearlUI"
+  short_description: "Build, configure and debug the PearlUI Luau library"
+  default_prompt: "Use $pearl-ui to build or update this Roblox interface with documented defaults and working config persistence."

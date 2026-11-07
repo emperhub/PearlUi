@@ -1,0 +1,32 @@
+{
+  "name": "PearlUIDemo",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "PearlUI": { "$path": "src/PearlUI.luau" },
+      "PearlUIPersistence": { "$path": "src/PersistenceClient.luau" },
+      "PearlUIShowcase": { "$path": "examples/Showcase.luau" }
+    },
+    "ServerScriptService": {
+      "PearlUIPersistenceServer": { "$path": "examples/Persistence.server.luau" }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "PearlUIDemo": { "$path": "examples/Demo.client.luau" }
+      }
+    },
+    "Workspace": {
+      "$properties": { "FilteringEnabled": true },
+      "Baseplate": {
+        "$className": "Part",
+        "$properties": {
+          "Anchored": true,
+          "Size": [256, 1, 256],
+          "Position": [0, -1, 0],
+          "Color": [0.78, 0.8, 0.85],
+          "Locked": true
+        }
+      }
+    }
+  }
+}

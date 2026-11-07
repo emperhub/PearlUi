@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "libraryVersion": "0.8.0",
+  "description": "Reference catalog, not a settings document or a constructor table. JSON null denotes an unset optional value; symbolic Roblox values must be resolved in Luau.",
+  "constructor": {
+    "Title": "Pearl UI",
+    "Name": "PearlUI",
+    "Theme": "Light",
+    "Accent": null,
+    "Parent": null,
+    "DisplayOrder": 50,
+    "Columns": 2,
+    "Scale": 1,
+    "ReduceMotion": false,
+    "AnimationSpeed": 0.2,
+    "ToggleKey": "Enum.KeyCode.RightShift",
+    "ConfigScope": "global"
+  },
+  "initialState": {
+    "WindowSize": [
+      900,
+      610
+    ],
+    "MinSize": [
+      680,
+      420
+    ],
+    "MaxSize": [
+      1440,
+      1000
+    ],
+    "Opacity": 0.97,
+    "NotificationsEnabled": true,
+    "Visible": true,
+    "Minimized": false,
+    "Maximized": false
+  },
+  "limits": {
+    "Scale": [
+      0.65,
+      1.3
+    ],
+    "Opacity": [
+      0.75,
+      1
+    ],
+    "AnimationSpeedEffective": [
+      0.05,
+      0.6
+    ],
+    "Columns": [
+      1,
+      2
+    ]
+  },
+  "layout": {
+    "twoColumnMinContentWidth": 580,
+    "compactRowBelowWidth": 460,
+    "columnGap": 14,
+    "cardGap": 16,
+    "windowRadius": 14,
+    "cardRadius": 12,
+    "fieldRadius": 7,
+    "font": "Gotham",
+    "boldFont": "GothamMedium",
+    "dock": {
+      "position": "top-center",
+      "topOffset": 0,
+      "size": [
+        330,
+        54
+      ],
+      "recoveryHandleWidth": 22,
+      "displayOrderOffset": 1
+    }
+  },
+  "tab": {
+    "Name": "Tab",
+    "Description": "",
+    "Icon": "lowercase Name; use a supported icon key"
+  },
+  "section": {
+    "Title": "Section",
+    "Id": "<Tab.Name>.<Title>",
+    "Column": "alternating Left then Right"
+  },
+  "controlCommon": {
+    "Label": "control kind",
+    "Description": null,
+    "Callback": null,
+    "Visible": true,
+    "Disabled": false,
+    "DisabledReason": null,
+    "Persist": true,
+    "ResetGroup": "Controls",
+    "Id": "<Tab.Name>.<Section.Title>.<Label> for value controls; no persisted Id for Button/Label"
+  },
+  "controls": {
+    "Toggle": {
+      "Default": false
+    },
+    "Slider": {
+      "Min": 0,
+      "Max": 100,
+      "Step": 1,
+      "Default": "Min",
+      "Suffix": ""
+    },
+    "Dropdown": {
+      "Options": "required: nonempty array of unique strings",
+      "Multi": false,
+      "Searchable": true,
+      "Default": "first option (single), empty array (multi)"
+    },
+    "ColorPicker": {
+      "Default": "current theme/custom accent Color3",
+      "Alpha": 1
+    },
+    "Input": {
+      "Default": "",
+      "MaxLength": 128,
+      "Placeholder": "Enter text"
+    },
+    "Keybind": {
+      "Default": "RightShift",
+      "OnPressed": null
+    },
+    "Button": {
+      "Text": "Run",
+      "Primary": false
+    },
+    "Label": {
+      "Value": ""
+    }
+  },
+  "notification": {
+    "Title": "Done",
+    "Description": "",
+    "Duration": 4,
+    "Preview": false
+  },
+  "confirmation": {
+    "Title": "Are you sure?",
+    "Description": "",
+    "ConfirmText": "Confirm",
+    "Text": null,
+    "ReadOnly": false,
+    "Validate": null,
+    "OnConfirm": null,
+    "OnCancel": null
+  },
+  "persistence": {
+    "enabledByDefault": false,
+    "AutoSave": true,
+    "Load": true,
+    "Debounce": 1.5,
+    "pollSeconds": 0.5,
+    "retrySeconds": 6,
+    "maxDocumentBytes": 200000,
+    "coreKeyMaxBytes": 64,
+    "serverKeyMaxBytes": 24,
+    "saveAcknowledgementRequired": true
+  },
+  "configs": {
+    "defaultCoreScope": "global",
+    "recommendedGameScope": "game_<game.GameId>",
+    "demoInitialConfigName": "Default",
+    "nameMaxCharacters": 32,
+    "nameMaxBytes": 128,
+    "maxConfigsPerScope": 20,
+    "maxScopes": 32,
+    "maxProfileBytes": 50000,
+    "maxTransferBytes": 100000,
+    "profileVersion": 1,
+    "layoutVersion": 1,
+    "settingsVersion": 1,
+    "transferKind": "PearlUIConfig",
+    "transferVersion": 1,
+    "autoLoadDefault": null
+  },
+  "demoOverrides": {
+    "Name": "PearlUIDemo",
+    "ConfigScope": "game_<game.GameId>",
+    "notificationToggleDefault": true,
+    "animationSliderRange": [
+      0.05,
+      0.5
+    ],
+    "favoriteTools": [
+      "Appearance",
+      "Profiles"
+    ],
+    "customAccentDefault": "#0071F6"
+  },
+  "themes": {
+    "order": [
+      "Light",
+      "Dark",
+      "Midnight",
+      "Graphite",
+      "Lavender",
+      "Rose",
+      "Matcha",
+      "Ocean",
+      "Forest"
+    ],
+    "palettes": {
+      "Light": {
+        "Window": "#F4F5F9",
+        "Sidebar": "#E7EAF2",
+        "Card": "#FFFFFF",
+        "Text": "#1D1F26",
+        "Muted": "#6E7382",
+        "Border": "#D5D8E2",
+        "Track": "#D5D9E4",
+        "Field": "#F7F8FC",
+        "Hover": "#E2E8F4",
+        "Accent": "#0071F6"
+      },
+      "Dark": {
+        "Window": "#202229",
+        "Sidebar": "#1B1D24",
+        "Card": "#2B2E37",
+        "Text": "#F1F2F7",
+        "Muted": "#9CA1B1",
+        "Border": "#414552",
+        "Track": "#4C5160",
+        "Field": "#242730",
+        "Hover": "#373D4C",
+        "Accent": "#3D91FF"
+      },
+      "Midnight": {
+        "Window": "#111624",
+        "Sidebar": "#0D121E",
+        "Card": "#192031",
+        "Text": "#E8EDF8",
+        "Muted": "#9BA9C0",
+        "Border": "#33425A",
+        "Track": "#374963",
+        "Field": "#141B2B",
+        "Hover": "#242F46",
+        "Accent": "#5B65DB"
+      },
+      "Graphite": {
+        "Window": "#1B1C1E",
+        "Sidebar": "#161719",
+        "Card": "#25272A",
+        "Text": "#F4F4F5",
+        "Muted": "#A6AAB2",
+        "Border": "#3E4147",
+        "Track": "#4A4E56",
+        "Field": "#1F2124",
+        "Hover": "#303338",
+        "Accent": "#5A67B8"
+      },
+      "Lavender": {
+        "Window": "#F3F0FA",
+        "Sidebar": "#E8E1F5",
+        "Card": "#FDFBFF",
+        "Text": "#2D233F",
+        "Muted": "#706086",
+        "Border": "#D8CCE9",
+        "Track": "#DACFEB",
+        "Field": "#F7F2FD",
+        "Hover": "#EBE1F8",
+        "Accent": "#7C4EB9"
+      },
+      "Rose": {
+        "Window": "#FAF1F2",
+        "Sidebar": "#F4E3E7",
+        "Card": "#FFFBFB",
+        "Text": "#40232B",
+        "Muted": "#846069",
+        "Border": "#EAD2D8",
+        "Track": "#E8CCD4",
+        "Field": "#FDF5F7",
+        "Hover": "#F7E2E9",
+        "Accent": "#B14169"
+      },
+      "Matcha": {
+        "Window": "#F1F5EB",
+        "Sidebar": "#E2EAD7",
+        "Card": "#FCFEF7",
+        "Text": "#283422",
+        "Muted": "#637456",
+        "Border": "#CFDBC2",
+        "Track": "#CAD9BB",
+        "Field": "#F4F9ED",
+        "Hover": "#E3EED5",
+        "Accent": "#4D7734"
+      },
+      "Forest": {
+        "Window": "#111D17",
+        "Sidebar": "#0D1712",
+        "Card": "#192A20",
+        "Text": "#E8F4EA",
+        "Muted": "#97B39F",
+        "Border": "#2F4C39",
+        "Track": "#355841",
+        "Field": "#14231A",
+        "Hover": "#213829",
+        "Accent": "#37744A"
+      },
+      "Ocean": {
+        "Window": "#0F1F27",
+        "Sidebar": "#0B1920",
+        "Card": "#172B34",
+        "Text": "#E6F5F7",
+        "Muted": "#91B2BA",
+        "Border": "#2E4C57",
+        "Track": "#355965",
+        "Field": "#12242D",
+        "Hover": "#1F3B46",
+        "Accent": "#167782"
+      }
+    }
+  }
+}
