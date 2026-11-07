@@ -23,3 +23,8 @@ jobs:
           git -c advice.detachedHead=false checkout FETCH_HEAD
       - name: Rebuild, verify generated files and compile Luau
         run: python3 tools/check.py --download-compiler --verify-generated
+      - name: Verify documentation content and browser script syntax
+        run: |
+          python3 tools/check_docs_site.py
+          node --check website/app.js
+          node --check website/theme.js

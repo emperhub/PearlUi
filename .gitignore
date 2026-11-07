@@ -10,6 +10,7 @@ __pycache__/
 /design/
 /work/
 /outputs/
+/website/dist/
 *.json.tmp
 *.json.bak
 .env

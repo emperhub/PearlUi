@@ -1,5 +1,8 @@
 # PearlUI
 
+📖 [คู่มือออนไลน์ — PearlUI Documentation](https://pearlui-documentation.znithexx.chatgpt.site)
+มีเมนูแยกหมวด ค้นหา API ตัวอย่างพร้อมคัดลอก และคลังไอคอน
+
 **1.0.2** พร้อมไอคอนทุกคอนโทรล เลย์เอาต์มือถือ การนำทางเกมแพด Dropdown แบบแบ่งหน้า และ Ready สำหรับตั้งค่าเริ่มต้น/การบันทึก
 
 รันซ้ำด้วย Name เดิมจะแทนที่ UI เก่าอัตโนมัติ รวม Dock และพาแนลย่อย; ใช้ ReplaceExisting=false ถ้าต้องการหลายหน้าต่าง

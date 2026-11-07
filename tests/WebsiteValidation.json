@@ -1,0 +1,49 @@
+{
+  "date": "2026-11-07",
+  "libraryVersion": "1.0.2",
+  "scope": "Documentation website; no runtime library change",
+  "status": "Passed",
+  "pages": 26,
+  "publicAPIParity": 81,
+  "iconAssets": 2029,
+  "runtimeAliases": 301,
+  "luaCodeBlocks": 35,
+  "uniqueLuaExamplesCompiled": 35,
+  "compiler": "Official Luau 0.745",
+  "browser": "Microsoft Edge / Chromium",
+  "viewportsObserved": [
+    [
+      1416,
+      874
+    ],
+    [
+      492,
+      718
+    ]
+  ],
+  "observedBrowserChecks": [
+    "Introduction and illustrative window rendered in dark theme",
+    "Global search for SetTheme returned Window.SetTheme",
+    "Enter navigated to API method anchor",
+    "Code copy displayed Copied and Thai clipboard acknowledgement",
+    "API filter retained only matching visible copy action",
+    "Icon filter for shield-check returned one canonical icon",
+    "Icon click displayed clipboard acknowledgement",
+    "Light theme rendered and persisted on a subsequent navigation",
+    "Narrow layout displayed mobile menu control",
+    "Mobile drawer opened and navigated to Themes",
+    "Browser console returned no logged errors"
+  ],
+  "limitations": [
+    "Physical mobile devices and assistive technologies were not tested",
+    "Syntax compilation of examples is separate from Roblox execution",
+    "No fresh Roblox runtime suites were needed for this documentation-only change"
+  ],
+  "publication": {
+    "status": "succeeded",
+    "url": "https://pearlui-documentation.znithexx.chatgpt.site",
+    "access": "public",
+    "version": 1,
+    "browserRendering": "Introduction loaded on production; no console errors"
+  }
+}
