@@ -4,7 +4,7 @@ return function(PearlUI)
 	local function check(n,v)assert(v,"FAILED: "..n);table.insert(checks,n)end
 	local Http=game:GetService("HttpService")
 	local function fixture(scope)
-		local w=PearlUI.new({Name="PearlConfigTest",ReduceMotion=true,ConfigScope=scope or "game_a"});table.insert(windows,w)
+		local w=PearlUI.new({Name="PearlConfigTest",ReduceMotion=true,ConfigScope=scope or "game_a",ReplaceExisting=false});table.insert(windows,w)
 		local t=w:Tab("General");w:Tab("Profiles")
 		local s=t:Section("Controls")
 		local flag=s:Toggle({Id="flag",Default=false})

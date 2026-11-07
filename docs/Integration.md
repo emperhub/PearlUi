@@ -1,7 +1,7 @@
 # Integration
 
 For a new application start with [GettingStarted.md](GettingStarted.md) and
-examples/Starter.client.luau. Core version 1.0.1 has responsive touch layout,
+examples/Starter.client.luau. Core version 1.0.2 has responsive touch layout,
 scoped gamepad navigation and the Ready initialization helper.
 
 ## Studio: minimal library

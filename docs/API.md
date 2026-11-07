@@ -1,6 +1,6 @@
 # PearlUI API contract
 
-Version 1.0.1. All 81 public methods; underscore methods are private.
+Version 1.0.2. All 81 public methods; underscore methods are private.
 
 See [Defaults.md](Defaults.md) for constructor/control options and values.
 
@@ -99,7 +99,7 @@ See [Defaults.md](Defaults.md) for constructor/control options and values.
 
 ## Construction and runtime fields
 
-Accepted window constructor options: Title, Name, Theme, Accent (Color3), Parent, DisplayOrder, Columns, Scale, ReduceMotion, AnimationSpeed, ToggleKey (Enum.KeyCode), ConfigScope, Responsive and GamepadNavigation. Size and opacity are changed through SetSize/SetOpacity, not invented constructor options.
+Accepted window constructor options: Title, Name, Theme, Accent (Color3), Parent, DisplayOrder, Columns, Scale, ReduceMotion, AnimationSpeed, ToggleKey (Enum.KeyCode), ConfigScope, Responsive, GamepadNavigation and ReplaceExisting. Size and opacity are changed through SetSize/SetOpacity, not invented constructor options.
 
 Applications may deliberately update ReduceMotion, AnimationSpeed and NotificationsEnabled, as the supplied demo does. Read Theme, Palette, Scale, Columns, WindowSize and ToggleKey for current state; prefer methods for geometry/theme changes.
 

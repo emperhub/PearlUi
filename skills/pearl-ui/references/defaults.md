@@ -1,6 +1,6 @@
 # Default values
 
-Version 1.0.1. [Machine-readable catalog](defaults.json),
+Version 1.0.2. [Machine-readable catalog](defaults.json),
 [minimal runnable example](https://github.com/emperhub/PearlUi/blob/main/examples/Default.client.luau), [API contract](api.md), [production integration](getting-started.md).
 The catalog is documentation: do not pass the entire JSON object to `PearlUI.new`
 or import it as a saved config. Resolve Enum, Color3 and Parent in Luau.
@@ -19,6 +19,7 @@ or import it as a saved config. Resolve Enum, Color3 and Parent in Luau.
 | ReduceMotion | false | App toggle; system reduced-motion preference also bypasses animation |
 | Responsive | true | Phone layout below 640px; touch landscape below 500px height |
 | GamepadNavigation | true | Scoped selection, focus ring, Back, shoulders and D-pad adjustment |
+| ReplaceExisting | true | Retire existing PearlUI windows with the same Name and Parent before creation |
 | AnimationSpeed | 0.2 seconds | Effective duration clamps to 0.05–0.6 |
 | ToggleKey | Enum.KeyCode.RightShift | Constructor needs Enum, setter accepts string too |
 | ConfigScope | global | Demo deliberately uses game_<game.GameId> |

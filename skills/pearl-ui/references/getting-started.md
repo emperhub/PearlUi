@@ -1,6 +1,6 @@
 # Use PearlUI in a real project
 
-PearlUI 1.0.1 is a client UI library. The application owns gameplay callbacks,
+PearlUI 1.0.2 is a client UI library. The application owns gameplay callbacks,
 permissions and its choice of storage. Core, bundled icons and session-only use
 work without executor APIs or runtime HTTP.
 
@@ -81,7 +81,15 @@ Tab icons update the sidebar and dock. See Icons.md for the complete catalog.
 Dropdown PageSize defaults 50 (10–100); search covers all options, while only
 one bounded page is built. This includes lists such as all 2,029 Lucide names.
 
-Call window:Destroy() before replacing an app instance. It disconnects input,
+ReplaceExisting defaults to true: rerunning with the same Name and Parent retires
+the previous PearlUI window, dock and floating panels before creating a fresh one.
+Use a stable Name for each app. A different name or parent creates an independent
+interface; ReplaceExisting=false permits deliberate duplicates. Reusing a name does
+not transfer session-only values. Use the same adapter and key with Ready to reload
+saved state. Overlapping replacements while a save is pending return an error;
+retry after the first run finishes. No close confirmation is shown for a rerun.
+
+Call window:Destroy() for an explicit teardown. It disconnects input,
 focus listeners, jobs, panels and ScreenGuis. Hide/minimize keeps the instance
 and storage watcher alive. Persist=false excludes inspectors and temporary values.
 Callbacks run safely with errors reported; handle app errors rather than silently

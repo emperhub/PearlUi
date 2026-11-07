@@ -4,10 +4,10 @@ local SOURCE_URL = "https://raw.githubusercontent.com/emperhub/PearlUi/bd4706abd
 local ok, source = pcall(function() return game:HttpGet(SOURCE_URL) end)
 assert(ok and type(source) == "string" and #source > 0, "Could not download PearlUI: " .. tostring(source))
 assert(type(loadstring) == "function", "This preview needs loadstring; use the Studio ModuleScript example otherwise")
-local chunk, compileError = loadstring(source, "@PearlUI-v1.0.1")
+local chunk, compileError = loadstring(source, "@PearlUI-v1.0.2")
 assert(chunk, compileError)
 local PearlUI = chunk()
-assert(type(PearlUI) == "table" and PearlUI.Version == "1.0.1", "Unexpected PearlUI version")
+assert(type(PearlUI) == "table" and PearlUI.Version == "1.0.2", "Unexpected PearlUI version")
 
 local window = PearlUI.new({
     Title = "Pearl / GitHub example", Name = "PearlRemoteExample", Theme = "Forest",

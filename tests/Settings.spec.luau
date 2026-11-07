@@ -3,7 +3,7 @@ return function(PearlUI)
 	local checks, windows = {}, {}
 	local function check(n,v)assert(v,"FAILED: "..n);table.insert(checks,n)end
 	local function fixture(name)
-		local w=PearlUI.new({Name=name or "PearlSettingsTest",ReduceMotion=true})
+		local w=PearlUI.new({Name=name or "PearlSettingsTest",ReduceMotion=true,ReplaceExisting=false})
 		table.insert(windows,w)
 		local a=w:Tab("General");w:Tab("Other")
 		local s=a:Section("Interface")

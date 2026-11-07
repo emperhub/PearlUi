@@ -6,7 +6,7 @@ return function(PearlUI)
 	local windows,checks = {},{}
 	local previousSelection=Gui.SelectedObject
 	local function check(name,value) assert(value,"FAILED: "..name);table.insert(checks,name) end
-	local function window(options) local w=PearlUI.new(options or {Name="PearlReleaseTest",ReduceMotion=true,DisplayOrder=110});table.insert(windows,w);return w end
+	local function window(options) options=options or {Name="PearlReleaseTest",ReduceMotion=true,DisplayOrder=110};options.ReplaceExisting=false;local w=PearlUI.new(options);table.insert(windows,w);return w end
 	local function count(map) local n=0;for _ in pairs(map)do n+=1 end;return n end
 	local function key(code) return {UserInputType=Enum.UserInputType.Gamepad1,KeyCode=code} end
 	local ok,result=pcall(function()

@@ -1,13 +1,13 @@
 local PearlUI = (function()
 --!nocheck
--- PearlUI v1.0.1 | MIT License | Client-side, dependency-free UI library.
+-- PearlUI v1.0.2 | MIT License | Client-side, dependency-free UI library.
 local Players = game:GetService("Players")
 local Input = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
 
-local PearlUI = { Version = "1.0.1" }
+local PearlUI = { Version = "1.0.2" }
 local Window, Tab, Section, Control = {}, {}, {}, {}
 Window.__index, Tab.__index, Section.__index = Window, Tab, Section
 Control.__index = Control
@@ -3389,20 +3389,33 @@ function Window:_layout(animate, viewportOverride, preferredInputOverride)
 	self:_closeMenu()
 end
 
+local function ownedWindow(gui)
+	if not gui:IsA("ScreenGui") then return false end
+	if gui:GetAttribute("PearlUIWindow") == 1 then return true end
+	-- Pre-1.0.2 windows already clean their listeners from Gui.Destroying.
+	local root = gui:FindFirstChild("Root")
+	local main = root and root:FindFirstChild("Window")
+	local shell = main and main:FindFirstChild("Shell")
+	return shell ~= nil and shell:FindFirstChild("Sidebar") ~= nil and shell:FindFirstChild("Content") ~= nil
+end
+
 function PearlUI.new(options)
 	options = options or {}
 	assert(type(options) == "table", "Window options must be a table")
 	for _,key in ipairs({"Title","Name","Theme","ConfigScope"}) do assert(options[key] == nil or (type(options[key]) == "string" and options[key] ~= ""), key .. " must be a nonempty string") end
 	for _,key in ipairs({"Scale","AnimationSpeed"}) do assert(options[key] == nil or (finite(options[key]) and options[key] > 0), key .. " must be positive and finite") end
-	for _,key in ipairs({"ReduceMotion","Responsive","GamepadNavigation"}) do assert(options[key] == nil or type(options[key]) == "boolean", key .. " must be boolean") end
+	for _,key in ipairs({"ReduceMotion","Responsive","GamepadNavigation","ReplaceExisting"}) do assert(options[key] == nil or type(options[key]) == "boolean", key .. " must be boolean") end
 	assert(options.Accent == nil or typeof(options.Accent) == "Color3", "Accent must be Color3")
 	assert(options.ToggleKey == nil or (typeof(options.ToggleKey) == "EnumItem" and options.ToggleKey.EnumType == Enum.KeyCode and options.ToggleKey ~= Enum.KeyCode.Unknown), "ToggleKey must be a KeyCode")
 	assert(options.DisplayOrder == nil or (finite(options.DisplayOrder) and options.DisplayOrder % 1 == 0 and options.DisplayOrder >= -2147483648 and options.DisplayOrder < 2147483647), "DisplayOrder must be an integer")
 	local player = Players.LocalPlayer
 	assert(options.Parent or player, "PearlUI must be created from a LocalScript")
+	assert(options.Parent == nil or typeof(options.Parent) == "Instance", "Parent must be an Instance")
+	local parent = options.Parent or player:WaitForChild("PlayerGui")
+	local name = options.Name or "PearlUI"
 	local self = setmetatable({
 		Title = options.Title or "Pearl UI", Tabs = {}, Sections = {}, Controls = {}, _ids = {}, _sectionIds = {},
-		Responsive = options.Responsive ~= false, GamepadNavigation = options.GamepadNavigation ~= false,
+		Responsive = options.Responsive ~= false, GamepadNavigation = options.GamepadNavigation ~= false, ReplaceExisting = options.ReplaceExisting ~= false,
 		_focusables = {}, _focusControls = {}, _gamepadAdjust = {}, _nextSelectionOrder = 1, _chromeButtons = {}, _chromeTouchButtons = {},
 		_connections = {}, _skins = {}, _surfaces = {}, _refresh = {}, _profiles = {}, _configBanks = {}, _configListeners = {}, ConfigScope = options.ConfigScope or "global", _tweens = {}, _visibility = {}, _jobs = {},
 		Theme = options.Theme or "Light", Scale = options.Scale or 1,
@@ -3418,10 +3431,36 @@ function PearlUI.new(options)
 	self.Palette = copy(THEMES[self.Theme])
 	self._accentOverride = options.Accent
 	if options.Accent then self.Palette.Accent = options.Accent end
+	local lease
+	if self.ReplaceExisting then
+		for _,child in ipairs(parent:GetChildren()) do
+			assert(child:GetAttribute("PearlUIReplacing") ~= name, "This PearlUI window is already restarting; retry after it finishes")
+		end
+		lease = make("Folder", {Name = "PearlUIReplacement"})
+		lease:SetAttribute("PearlUIReplacing", name); lease.Parent = parent
+	end
+	local ok, result = pcall(function()
+	if self.ReplaceExisting then
+		for _,child in ipairs(parent:GetChildren()) do
+			if child.Name == name and ownedWindow(child) then
+				local lifecycle = child:FindFirstChild("PearlUILifecycle")
+				if lifecycle and lifecycle:IsA("BindableFunction") and lifecycle:GetAttribute("PearlUILifecycle") == 1 then
+					assert(lifecycle:Invoke() == true, "Previous PearlUI window could not finish closing")
+				else child:Destroy() end
+			end
+		end
+	end
 	self.Gui = make("ScreenGui", {
 		Name = options.Name or "PearlUI", ResetOnSpawn = false, IgnoreGuiInset = false,
 		ZIndexBehavior = Enum.ZIndexBehavior.Global, DisplayOrder = options.DisplayOrder or 50,
-	}, options.Parent or player:WaitForChild("PlayerGui"))
+	}, parent)
+	self.Gui:SetAttribute("PearlUIWindow", 1)
+	local lifecycle = make("BindableFunction", {Name = "PearlUILifecycle"}, self.Gui)
+	lifecycle:SetAttribute("PearlUILifecycle", 1)
+	lifecycle.OnInvoke = function()
+		if self._destroying and not self.Destroyed then return false end
+		self:Destroy(); return self.Destroyed
+	end
 	self.Root = make("Frame", { Name = "Root", BackgroundTransparency = 1 }, self.Gui)
 	self.UIScale = make("UIScale", {}, self.Root)
 	self.DockGui = make("ScreenGui", {
@@ -3611,6 +3650,13 @@ function PearlUI.new(options)
 	self:_later(0, function() if self.Visible and not self.Minimized then self:_show(self.Main, true, true) end end)
 	if Input.PreferredInput == Enum.PreferredInput.Gamepad then self:_later(0,function() if not self.Destroyed and not GuiService.SelectedObject then self:Focus() end end) end
 	return self
+	end)
+	if lease then lease:Destroy() end
+	if not ok then
+		if self.Gui then pcall(function() self:Destroy() end) end
+		error(result, 2)
+	end
+	return result
 end
 
 function Window:RefreshUserProfile()

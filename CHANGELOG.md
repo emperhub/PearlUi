@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 — 2026-11-07
+
+- Rerunning a UI replaces existing PearlUI owners with the same Name and Parent by default, including their docks, detached panels and listeners. Uses the original teardown across module reloads and attempts configured final auto-save.
+- Added ReplaceExisting=false for intentional duplicates. Different app names/parents and unrelated same-name GUIs remain independent. Invalid construction preserves the previous UI; overlapping replacements are guarded while a save is pending.
+- Added rerun, cross-module, legacy upgrade, storage handoff and concurrency regression coverage.
+
 ## 1.0.1 — 2026-11-07
 
 - Red titlebar button asks before destroying the complete interface, floating panels and dock. Cancel keeps it open; yellow still minimizes. Desktop and touch use the same close action.

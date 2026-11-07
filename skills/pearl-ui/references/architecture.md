@@ -95,6 +95,17 @@ removing the main window, floating panels and dock; reopening requires a fresh i
 Repeated red activation reuses the pending close dialog. Yellow only minimizes;
 green toggles maximize. Direct SetVisible/SetMinimized and Destroy retain their APIs.
 
+Constructors default to ReplaceExisting=true, scoped by exact Name and Parent.
+Retire all matching PearlUI owners before creating the replacement. A tagged
+BindableFunction on the old ScreenGui calls its original Destroy implementation,
+even across separately evaluated module copies; no executor globals are needed.
+A temporary parent lease rejects overlapping replacements while a final save yields.
+Invalid options are checked before retiring the old UI. Same-name unrelated GUIs
+are preserved. Legacy PearlUI window structure is recognized and its existing
+Destroying handler performs cleanup. ReplaceExisting=false permits deliberate
+duplicates; different names/parents remain independent. Reruns create fresh state;
+retaining values between instances requires the same real storage adapter and key.
+
 Destroy is idempotent: stop callbacks, listeners, input ownership, tween jobs,
 thumbnail responses and persistence watcher; dispose both ScreenGuis. The showcase
 also destroys its isolated sample. User-avatar requests use token guards/fallbacks.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "libraryVersion": "1.0.1",
+  "libraryVersion": "1.0.2",
   "description": "Reference catalog, not a settings document or a constructor table. JSON null denotes an unset optional value; symbolic Roblox values must be resolved in Luau.",
   "constructor": {
     "Title": "Pearl UI",
@@ -16,7 +16,8 @@
     "ToggleKey": "Enum.KeyCode.RightShift",
     "ConfigScope": "global",
     "Responsive": true,
-    "GamepadNavigation": true
+    "GamepadNavigation": true,
+    "ReplaceExisting": true
   },
   "initialState": {
     "WindowSize": [
