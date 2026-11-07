@@ -1,6 +1,6 @@
 # PearlUI
 
-📖 [คู่มือออนไลน์ — PearlUI Documentation](https://pearlui-documentation.znithexx.chatgpt.site)
+📖 [คู่มือออนไลน์ — PearlUI Documentation](https://emperhub.github.io/PearlUi/)
 มีเมนูแยกหมวด ค้นหา API ตัวอย่างพร้อมคัดลอก และคลังไอคอน
 
 **1.0.2** พร้อมไอคอนทุกคอนโทรล เลย์เอาต์มือถือ การนำทางเกมแพด Dropdown แบบแบ่งหน้า และ Ready สำหรับตั้งค่าเริ่มต้น/การบันทึก

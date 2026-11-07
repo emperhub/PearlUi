@@ -1,0 +1,53 @@
+name: Deploy PearlUI documentation
+on:
+  push:
+    branches: [main]
+    paths:
+      - website/**
+      - docs/**
+      - defaults/**
+      - assets/lucide/**
+      - src/PearlUI.luau
+      - tools/build_docs_site.py
+      - tools/check_docs_site.py
+      - CHANGELOG.md
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pearl-github-pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the exact public commit
+        env:
+          PEARL_REPOSITORY: ${{ github.repository }}
+          PEARL_REVISION: ${{ github.sha }}
+        run: |
+          git init .
+          git remote add origin "https://github.com/${PEARL_REPOSITORY}.git"
+          git fetch --depth=1 origin "${PEARL_REVISION}"
+          git -c advice.detachedHead=false checkout FETCH_HEAD
+      - name: Build and verify the documentation
+        run: |
+          python3 tools/check_docs_site.py
+          node --check website/app.js
+          node --check website/theme.js
+      - name: Configure Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+      - name: Upload the static website
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: website/dist
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

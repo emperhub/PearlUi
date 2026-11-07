@@ -30,5 +30,9 @@ The Marked parser is vendored at 18.1.3 with its license and archive SHA-256.
 Only repository-authored Markdown is rendered; raw active HTML and unsafe link
 protocols are removed before insertion. Search queries are always escaped.
 
-The published Sites checkout separately keeps its exact identity in
-.openai/hosting.json. Its credentials never belong in this public repository.
+The primary publication is https://emperhub.github.io/PearlUi/. The Pages workflow
+builds, checks and publishes website/dist on main updates. In repository settings,
+select Pages → Source → GitHub Actions. No personal access token is needed.
+
+The original Sites checkout separately keeps its identity in .openai/hosting.json.
+Its credentials never belong in this public repository.
