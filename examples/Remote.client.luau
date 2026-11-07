@@ -1,13 +1,13 @@
 --!nocheck
 -- Client preview with HttpGet/loadstring; use Default.client.luau in Studio.
-local SOURCE_URL = "https://raw.githubusercontent.com/emperhub/PearlUi/8ea42395d93b7df1f888e2b9a4f050a9d7236cde/src/PearlUI.luau"
+local SOURCE_URL = "https://raw.githubusercontent.com/emperhub/PearlUi/7e5d20ac5670686d0469d56358babe8df1c45703/src/PearlUI.luau"
 local ok, source = pcall(function() return game:HttpGet(SOURCE_URL) end)
 assert(ok and type(source) == "string" and #source > 0, "Could not download PearlUI: " .. tostring(source))
 assert(type(loadstring) == "function", "This preview needs loadstring; use the Studio ModuleScript example otherwise")
-local chunk, compileError = loadstring(source, "@PearlUI-v0.8.0")
+local chunk, compileError = loadstring(source, "@PearlUI-v1.0.0")
 assert(chunk, compileError)
 local PearlUI = chunk()
-assert(type(PearlUI) == "table" and PearlUI.Version == "0.8.0", "Unexpected PearlUI version")
+assert(type(PearlUI) == "table" and PearlUI.Version == "1.0.0", "Unexpected PearlUI version")
 
 local window = PearlUI.new({
     Title = "Pearl / GitHub example", Name = "PearlRemoteExample", Theme = "Forest",
@@ -44,7 +44,7 @@ end})
 behavior:Button({Label = "Floating section", Text = "Detach", Callback = function() interface:Detach() end})
 behavior:Button({Label = "Return floating section", Text = "Dock", Callback = function() interface:Dock() end})
 behavior:Button({Label = "Restore this example", Text = "Reset…", Callback = function() window:RequestReset("All") end})
-window:CaptureDefaults()
+window:Ready()
 window:Notify({Title = "Loaded from GitHub", Description = "PearlUI " .. PearlUI.Version .. " is ready.", Preview = true})
 -- No persistence adapter: this isolated example does not change saved demo configs.
 return {Window = window, Controls = controls, Events = events, Section = interface, Result = result,

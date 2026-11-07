@@ -7,7 +7,7 @@
 - Added scoped gamepad focus rings, safe modal focus, Select/Back, shoulder tab navigation and D-pad slider/color changes without global navigation changes.
 - Bounded dropdown rendering with PageSize=50 and whole-list search; corrected color pointer coordinates and deferred-focus races.
 - Added Ready for construction defaults, default config and explicit storage setup, a session-only starter and a production integration guide.
-- The new 114-check release suite exercises synthetic viewport/input/storage cases. See the release validation report for actual completed suites and device limitations.
+- The release suite exercises synthetic viewport/input/storage cases and popup layer regressions. See the release validation report for actual completed suites and device limitations.
 
 ## Lucide catalog — 2026-11-07
 

@@ -49,9 +49,25 @@ Native visual checks should include both themes and custom accents, rapid tab/op
 close/detach/dock actions, popup clipping, scroll bounds, compact viewport, disabled
 controls, preview toast and side-stowed dock recovery. Record what was actually tried.
 
-## Evidence boundaries
+## Current 1.0.0 evidence
 
-tests/latest-results.json records 45 passing showcase checks for 0.8.0; its historical
+The release audit passed 587 assertions across 16 suites plus the separate Icons
+construction suite (2,029 icons / 301 runtime aliases). See
+[ReleaseValidation.json](../tests/ReleaseValidation.json) for exact commit provenance.
+After the final native color-inset correction, Features, FeatureMotion and Release
+were rerun successfully; unrelated suites retain the preceding full-run results.
+Native mouse checks confirmed color changes, Done, dropdown page navigation and
+selection from a rebuilt page. Compact viewport and gamepad cases are simulated.
+
+Run `python tools/check.py --compiler <luau-compile> --verify-generated` for the
+reproducible build, geometry, metadata and syntax checks. GitHub Actions runs the
+same checks using a checksum-pinned official compiler on each push/PR. This CI
+does not emulate a Roblox client. Physical touch/controller hardware, a published
+DataStore and reopening XML in Studio remain unverified.
+
+## Historical evidence boundaries
+
+The 0.8.0 audit recorded 45 passing showcase checks; its historical
 0.7.0 core baseline is 424 checks across 14 suites. The baseline was not rerun for
 the demo-only update. These are separate results, not 469 fresh 0.8.0 checks.
 Published DataStore, physical touch/gamepad and reopening generated XML in Studio

@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "date": "2026-11-07",
+  "environment": "Connected Roblox client; isolated disposable UI",
+  "status": "Passed",
+  "passed": 587,
+  "failed": 0,
+  "suites": {
+    "Runtime.spec.luau": 50,
+    "Animation.spec.luau": 18,
+    "Dock.spec.luau": 16,
+    "Features.spec.luau": 52,
+    "FeatureMotion.spec.luau": 6,
+    "ColumnsProfile.spec.luau": 32,
+    "Audit.spec.luau": 40,
+    "DetachedGeometry.spec.luau": 23,
+    "NotificationDock.spec.luau": 20,
+    "Themes.spec.luau": 59,
+    "Settings.spec.luau": 38,
+    "Configs.spec.luau": 45,
+    "Release.spec.luau": 118,
+    "FileStorage.spec.luau": 11,
+    "PersistenceServer.spec.luau": 14,
+    "Showcase.spec.luau": 45
+  },
+  "fullRunCommit": "33598151ffc999e20946a25c95ff02b9862120a7",
+  "finalCoreCommit": "7e5d20ac5670686d0469d56358babe8df1c45703",
+  "finalChange": "Native color pointer GUI-inset correction",
+  "rerunAfterFinalChange": [
+    "Features.spec.luau",
+    "FeatureMotion.spec.luau",
+    "Release.spec.luau"
+  ],
+  "icons": {
+    "canonicalIcons": 2029,
+    "runtimeAliases": 301,
+    "normalizedCases": 5,
+    "sidebarAndDock": true,
+    "themeRepaint": true
+  },
+  "local": {
+    "compiler": "Official Luau 0.745",
+    "compiledLuauFiles": 28,
+    "publicAPIs": 81,
+    "themes": 9,
+    "skillReferences": 12,
+    "svgGeometry": 2029,
+    "pathRegressions": 5,
+    "xmlEmbeddedSourceRoundtrips": 5,
+    "ci": {
+      "conclusion": "success",
+      "url": "https://github.com/emperhub/PearlUi/actions/runs/42388459856",
+      "commit": "7e5d20ac5670686d0469d56358babe8df1c45703"
+    }
+  },
+  "nativeChecks": [
+    "Forest compact 390x844 layout inspected on desktop",
+    "Mouse changed saturation/value while popup remained open",
+    "Done closed color editor and retained selected value",
+    "Mouse opened paged dropdown and moved to page 2",
+    "Mouse selected Option 012 from rebuilt page and menu closed"
+  ],
+  "simulatedDevices": [
+    "320x568 touch",
+    "390x844 touch",
+    "600x960 touch",
+    "844x390 touch",
+    "1280x800 desktop restoration",
+    "Gamepad selection, tab switching, adjustment and recovery"
+  ],
+  "limitations": [
+    "Physical phone/touch/controller hardware not tested",
+    "Published Roblox DataStore not tested; server suite uses mocked services",
+    "Generated XML source roundtrips verified but XML not reopened in Studio",
+    "Not every possible application callback or manual interaction combination tested"
+  ],
+  "sourceSha256": "5bf7146c6cf73d57bc362047519a3bc06166c31d297051ce220ecb3602d7b549",
+  "remoteExample": {
+    "version": "1.0.0",
+    "sections": 2,
+    "ready": true,
+    "callbacks": true,
+    "detachDock": true,
+    "destroyCleanup": true,
+    "storage": "Session only"
+  },
+  "sourceHashEncoding": "UTF-8 with LF line endings"
+}
