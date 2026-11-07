@@ -12,10 +12,10 @@ end
 -- END STORAGE ADAPTER
 
 local window = PearlUI.new({ Title = "Pearl UI", Name = "PearlUIDemo", Theme = "Light", Columns = 2, ConfigScope = "game_" .. tostring(game.GameId) })
-local general = window:Tab({ Name = "General", Icon = "general", Description = "A calmer space. Made for the way you play." })
+local general = window:Tab({ Name = "General", Icon = "layout-dashboard", Description = "A calmer space. Made for the way you play." })
 local appearance = window:Tab({ Name = "Appearance", Icon = "appearance", Description = "Your palette, your atmosphere." })
-local controls = window:Tab({ Name = "Controls", Icon = "controls", Description = "Small details. A more comfortable workspace." })
-local profiles = window:Tab({ Name = "Profiles", Icon = "profiles", Description = "Keep a setup you can come back to." })
+local controls = window:Tab({ Name = "Controls", Icon = "sliders-horizontal", Description = "Small details. A more comfortable workspace." })
+local profiles = window:Tab({ Name = "Profiles", Icon = "folder-cog", Description = "Keep a setup you can come back to." })
 local defaultLayout
 
 local interface = general:Section({ Title = "Interface", Column = "Left" })

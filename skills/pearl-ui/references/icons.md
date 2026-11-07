@@ -5,6 +5,10 @@ PearlUI includes all **2,029 canonical Lucide icons** from upstream commit
 The pack is embedded in the core module: no image uploads, asset IDs, extra
 ModuleScripts or runtime icon downloads are needed.
 
+The [Studio example](https://github.com/emperhub/PearlUi/blob/main/examples/Lucide.client.luau) shows seven different tab
+icons with copyable usage snippets. The full demo also uses distinct Lucide
+icons for its existing tabs.
+
 ```lua
 local PearlUI = require(game.ReplicatedStorage.PearlUI)
 local window = PearlUI.new({Title = "My interface", Theme = "Forest"})

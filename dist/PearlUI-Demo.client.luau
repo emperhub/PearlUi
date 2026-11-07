@@ -5211,10 +5211,10 @@ end
 
 
 local window = PearlUI.new({ Title = "Pearl UI", Name = "PearlUIDemo", Theme = "Light", Columns = 2, ConfigScope = "game_" .. tostring(game.GameId) })
-local general = window:Tab({ Name = "General", Icon = "general", Description = "A calmer space. Made for the way you play." })
+local general = window:Tab({ Name = "General", Icon = "layout-dashboard", Description = "A calmer space. Made for the way you play." })
 local appearance = window:Tab({ Name = "Appearance", Icon = "appearance", Description = "Your palette, your atmosphere." })
-local controls = window:Tab({ Name = "Controls", Icon = "controls", Description = "Small details. A more comfortable workspace." })
-local profiles = window:Tab({ Name = "Profiles", Icon = "profiles", Description = "Keep a setup you can come back to." })
+local controls = window:Tab({ Name = "Controls", Icon = "sliders-horizontal", Description = "Small details. A more comfortable workspace." })
+local profiles = window:Tab({ Name = "Profiles", Icon = "folder-cog", Description = "Keep a setup you can come back to." })
 local defaultLayout
 
 local interface = general:Section({ Title = "Interface", Column = "Left" })
@@ -5372,9 +5372,9 @@ local showcaseFactory = (function()
 return function(PearlUI, window)
 	local Http = game:GetService("HttpService")
 	local bench = { Coverage = {}, Actions = {}, Controls = {}, Factories = {}, Results = {}, CallbackCount = 0, ConfigEvents = 0 }
-	local components = window:Tab({Name="Components",Icon="controls",Description="Every control. Live values, callbacks and editable states."})
-	local windows = window:Tab({Name="Window lab",Icon="general",Description="Try window geometry, the dock, panels and navigation."})
-	local tools = window:Tab({Name="API tools",Icon="profiles",Description="Inspect data and test persistence in an isolated sample window."})
+	local components = window:Tab({Name="Components",Icon="component",Description="Every control. Live values, callbacks and editable states."})
+	local windows = window:Tab({Name="Window lab",Icon="panels-top-left",Description="Try window geometry, the dock, panels and navigation."})
+	local tools = window:Tab({Name="API tools",Icon="code-xml",Description="Inspect data and test persistence in an isolated sample window."})
 	local showcase = components:Section({Title="All components",Column="Left"})
 	local controlActions = components:Section({Title="Control inspector",Column="Right"})
 	local geometry = windows:Section({Title="Window & dock",Column="Left"})

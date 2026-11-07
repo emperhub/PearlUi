@@ -3,11 +3,14 @@
   "libraryVersion": "0.8.0",
   "scope": "Complete Lucide catalog, lazy geometry and existing tab Icon integration",
   "skillValidation": "Skill is valid!",
-  "compiledLuauFiles": 25,
+  "compiledLuauFiles": 26,
   "metadata": "PASS: 76 APIs, 9 palettes, default/source consistency and reference links",
   "build": "PASS: five-source XML and standalone artifacts rebuilt",
   "privacy": "Allowlist excludes local captures, actual settings and caches; published text scanned for local identifiers",
-  "runtimeSuitesRerun": [],
+  "runtimeSuitesRerun": [
+    "Icons.spec.luau",
+    "Runtime.spec.luau"
+  ],
   "historicalCoreSuitesRerun": false,
   "icons": 2029,
   "upstreamAliases": 296
