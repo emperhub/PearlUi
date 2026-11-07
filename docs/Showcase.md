@@ -51,7 +51,7 @@ Parameter controls track changes made elsewhere in the demo silently.
 
 ## Coverage
 
-[ShowcaseAPI.json](ShowcaseAPI.json) maps **all 76 public methods** to visible
+[ShowcaseAPI.json](ShowcaseAPI.json) maps **all 81 public methods** to visible
 controls/actions. Factories are represented by the live component examples
 and the Open sample action. This map was checked against the public functions
 in src/PearlUI.luau, including dropdown/color-specific methods.

@@ -1,5 +1,9 @@
 # Integration
 
+For a new application start with [GettingStarted.md](GettingStarted.md) and
+examples/Starter.client.luau. Core version 1.0.0 has responsive touch layout,
+scoped gamepad navigation and the Ready initialization helper.
+
 ## Studio: minimal library
 
 Import `dist/PearlUI.rbxmx` into ReplicatedStorage as ModuleScript `PearlUI`.
@@ -16,7 +20,7 @@ In the compatible client preview with HttpGet/loadstring, run:
 local app = loadstring(game:HttpGet("https://raw.githubusercontent.com/emperhub/PearlUi/main/examples/Remote.client.luau"))()
 ```
 
-This downloads the example and loads PearlUI 0.8.0 from an immutable commit URL.
+This downloads the example and loads PearlUI from an immutable commit URL.
 It builds a Forest window, two sections and eleven controls with real callbacks:
 theme, notifications, opacity, message, menu key, motion, toast, detach/dock and
 reset. The returned app has Window, Controls and Events for inspection. Call
@@ -31,7 +35,7 @@ Open `dist/PearlUI-Demo.rbxlx` and Play, or map `default.project.json` with Rojo
 The five sources are: PearlUI and PearlUIPersistence from src, PearlUIShowcase
 from examples in ReplicatedStorage; Persistence.server in ServerScriptService;
 Demo.client in StarterPlayerScripts. The generated XML includes all five.
-Use [Showcase](Showcase.md) for all 76 public APIs, 7 tabs and 14 sections.
+Use [Showcase](Showcase.md) for all 81 public APIs, 7 tabs and 14 sections.
 
 The standalone `dist/PearlUI-Demo.client.luau` embeds core, showcase and the
 optional FileStorage adapter. It belongs in a compatible local client preview;

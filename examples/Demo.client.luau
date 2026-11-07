@@ -175,14 +175,12 @@ if showcaseModule then window._testBench = require(showcaseModule)(PearlUI, wind
 
 window:SelectTab(general)
 defaultLayout = window:ExportLayout()
-window:SaveProfile("Default")
-window:CaptureDefaults()
+local ready, readyStatus = window:Ready({ Adapter = persistenceAdapter, Key = "demo", Debounce = 1.5, OnStatus = function(status)
+	storageStatus:Set(status == "Error" and "Save unavailable — retry" or status)
+end })
+if not persistenceAdapter then storageStatus:Set("Session only") end
+if not ready then storageStatus:Set("Storage unavailable");warn(readyStatus) end
 refresh()
-if persistenceAdapter then
-	window:ConfigurePersistence({ Adapter = persistenceAdapter, Key = "demo", Debounce = 1.5, OnStatus = function(status)
-		storageStatus:Set(status == "Error" and "Save unavailable — retry" or status)
-	end })
-end
 
 if window._testBench then window._testBench.Sync() end
 

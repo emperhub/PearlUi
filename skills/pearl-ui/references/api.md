@@ -1,6 +1,6 @@
 # PearlUI API contract
 
-Version 0.8.0. All 76 public methods; underscore methods are private.
+Version 1.0.0. All 81 public methods; underscore methods are private.
 
 See [Defaults.md](defaults.md) for constructor/control options and values.
 
@@ -18,6 +18,7 @@ See [Defaults.md](defaults.md) for constructor/control options and values.
 | `Control:Serialize()` | JSON-safe value | ColorPicker returns {Hex,Alpha}; multi-dropdown returns an array. Never serialize GUI instances. |
 | `Control:Set(value, silent)` | self | Validate, store and render. Callback fires unless silent=true; works while disabled. Destroyed controls reject setters. |
 | `Control:SetDisabled(disabled, reason)` | self | Boolean plus optional reason. Blocks native input and cancels owned popup/capture/drag; setters still work. |
+| `Control:SetIcon(name)` | self | Set or remove a Lucide label-side icon on any control, without changing its value, Id or callback. nil removes it. |
 | `Control:SetLabel(value)` | self | Change presentation without changing Id; refresh search matching. |
 | `Control:SetVisible(visible)` | self | Hide/show while respecting search. Hiding closes owned interactions. |
 | `dropdown:Open()` | self | Open if enabled and in a visible window/page; multi selection stays open until Done/Close. |
@@ -28,14 +29,16 @@ See [Defaults.md](defaults.md) for constructor/control options and values.
 | `Section:ColorPicker(options)` | Control | Default current accent, Alpha=1. Accept Color3, HEX or {Hex,Alpha}; callback receives Color3,alpha. |
 | `Section:Detach()` | nil | Move card to a floating window, resetting card origin/canvas. Already detached reveals it. |
 | `Section:Dock()` | nil | Return content synchronously to its own page; fade empty floating shell independently. |
-| `Section:Dropdown(options)` | Control | Required nonempty unique string Options. Multi=false, Searchable=true. Scalar or ordered array value. |
+| `Section:Dropdown(options)` | Control | Required nonempty unique string Options. Multi=false, Searchable=true, PageSize=50 (10..100). Search covers all options; render one bounded page. Scalar or ordered array value. |
 | `Section:Input(options)` | Control | Default empty string; MaxLength=128 UTF-8 characters, Placeholder='Enter text'. Commits on focus loss. |
 | `Section:Keybind(options)` | Control | Default RightShift. Callback(string key name) for changes; OnPressed(Enum.KeyCode) for activation. |
 | `Section:Label(options)` | Control | String shorthand or {Label,Value}; Value defaults empty. Get/Set useful for result labels; no persistence Id. |
 | `Section:Reveal()` | self | Reveal/focus detached panel, restoring hidden/minimized main window; detaches if needed. |
+| `Section:SetIcon(name)` | self | Replace section header icon, including detached panels. nil restores grip-vertical. |
 | `Section:Slider(options)` | Control | Finite numeric Min/Max/Step; defaults 0/100/1; clamped and quantized value, Callback(number). |
 | `Section:Toggle(options)` | Control | Boolean Default=false; Callback(boolean). |
-| `Tab:Section(options)` | Section | String or {Title, Id, Column}. Stable unique Id; Column Left/Right, alternating by default. |
+| `Tab:Section(options)` | Section | String or {Title, Id, Column, Icon}. Stable unique Id; Column Left/Right, alternating by default; Icon defaults grip-vertical. |
+| `Tab:SetIcon(name)` | self | Replace sidebar and dock icon together; preserve current selection and theme bindings. |
 | `Window:CaptureDefaults()` | self | Capture current profile after building UI and before loading user state. Named Default profile is separate. |
 | `Window:ConfigurePersistence(options)` | boolean, loaded-or-error | Adapter Load/Save, Key required; AutoSave=true, Load=true, Debounce=1.5, optional OnStatus. Configure after CaptureDefaults. |
 | `Window:Confirm(options)` | handle | Title/Description/ConfirmText/OnConfirm/OnCancel. Optional Text, ReadOnly and Validate for editor. Handle Confirm/Cancel complete once; Editor/ErrorLabel available for inspection. |
@@ -46,6 +49,7 @@ See [Defaults.md](defaults.md) for constructor/control options and values.
 | `Window:ExportConfig(name)` | JSON-or-nil, error? | One versioned PearlUIConfig envelope with Name, Scope and Profile, not all configs. |
 | `Window:ExportLayout()` | JSON string | Encode GetLayout for transfer/storage. |
 | `Window:ExportProfile()` | JSON string | Version=1, Values, Appearance and Layout. Persist=false controls and destroyed controls are excluded. |
+| `Window:Focus(target)` | boolean, error? | Open/restore the window and focus a control or owned GuiObject. Omit target to focus current popup/modal/page; requires GamepadNavigation=true. |
 | `Window:GetConfigStatus()` | table | Scope, Active, AutoLoad, Dirty, Count. Manager fields and transient tab/visibility changes do not create edited status. |
 | `Window:GetLayout()` | table | Version=1 layout with Window, Dock, Panels and ActiveTab; normalized positions, no GUI objects. |
 | `Window:GetPersistenceStatus()` | status, error? | Disabled, Ready, Loading, Unsaved, Saving, Saved or Error. |
@@ -58,6 +62,7 @@ See [Defaults.md](defaults.md) for constructor/control options and values.
 | `Window:LoadSettings()` | boolean, exists-or-error | Load/validate current game bank and named configs; selected auto-load overrides last working setup. Failed load blocks writes. |
 | `Window:Notify(options)` | toast slot or nil | String shorthand or {Title,Description,Duration,Preview}. Disabled preference suppresses ordinary notifications; Preview=true bypasses it without changing preference. |
 | `Window:OnConfigsChanged(callback)` | Disconnect handle | Observe list/metadata changes. This is not a callback for every control edit. |
+| `Window:Ready(options)` | boolean, status-or-error | After building UI, capture defaults once, optionally create Default config and configure Adapter/Key/Load/AutoSave/Debounce/OnStatus. No adapter reports Session only. Repeated successful calls preserve current edits; failed loading can be retried. |
 | `Window:RefreshUserProfile()` | nil | Refresh LocalPlayer display name, username and AvatarBust thumbnail, with fallback/token guards. |
 | `Window:RenameConfig(name, replacement)` | boolean, name-or-error | Move snapshot; update active/auto-load references; preserve current values. |
 | `Window:RequestReset(scope)` | confirmation handle | Same scopes, with an in-product confirmation before application. |
@@ -94,11 +99,11 @@ See [Defaults.md](defaults.md) for constructor/control options and values.
 
 ## Construction and runtime fields
 
-Accepted window constructor options: Title, Name, Theme, Accent (Color3), Parent, DisplayOrder, Columns, Scale, ReduceMotion, AnimationSpeed, ToggleKey (Enum.KeyCode), ConfigScope. Size and opacity are changed through SetSize/SetOpacity, not invented constructor options.
+Accepted window constructor options: Title, Name, Theme, Accent (Color3), Parent, DisplayOrder, Columns, Scale, ReduceMotion, AnimationSpeed, ToggleKey (Enum.KeyCode), ConfigScope, Responsive and GamepadNavigation. Size and opacity are changed through SetSize/SetOpacity, not invented constructor options.
 
 Applications may deliberately update ReduceMotion, AnimationSpeed and NotificationsEnabled, as the supplied demo does. Read Theme, Palette, Scale, Columns, WindowSize and ToggleKey for current state; prefer methods for geometry/theme changes.
 
-Control common options: Id, Label, Description, Callback, Visible, Disabled, DisabledReason, Persist and ResetGroup. Use explicit section Id/Column to preserve existing config layout.
+Control common options: Id, Label, Description, Icon, Callback, Visible, Disabled, DisabledReason, Persist and ResetGroup. Use explicit section Id/Column to preserve existing config layout.
 
 ## Icon catalogs
 

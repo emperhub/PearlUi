@@ -1,5 +1,5 @@
 {
-  "version": "0.8.0",
+  "version": "1.0.0",
   "methods": {
     "ColorPicker.Get": {
       "signature": "picker:Get()",
@@ -61,6 +61,11 @@
       "returns": "self",
       "contract": "Boolean plus optional reason. Blocks native input and cancels owned popup/capture/drag; setters still work."
     },
+    "Control.SetIcon": {
+      "signature": "Control:SetIcon(name)",
+      "returns": "self",
+      "contract": "Set or remove a Lucide label-side icon on any control, without changing its value, Id or callback. nil removes it."
+    },
     "Control.SetLabel": {
       "signature": "Control:SetLabel(value)",
       "returns": "self",
@@ -114,7 +119,7 @@
     "Section.Dropdown": {
       "signature": "Section:Dropdown(options)",
       "returns": "Control",
-      "contract": "Required nonempty unique string Options. Multi=false, Searchable=true. Scalar or ordered array value."
+      "contract": "Required nonempty unique string Options. Multi=false, Searchable=true, PageSize=50 (10..100). Search covers all options; render one bounded page. Scalar or ordered array value."
     },
     "Section.Input": {
       "signature": "Section:Input(options)",
@@ -136,6 +141,11 @@
       "returns": "self",
       "contract": "Reveal/focus detached panel, restoring hidden/minimized main window; detaches if needed."
     },
+    "Section.SetIcon": {
+      "signature": "Section:SetIcon(name)",
+      "returns": "self",
+      "contract": "Replace section header icon, including detached panels. nil restores grip-vertical."
+    },
     "Section.Slider": {
       "signature": "Section:Slider(options)",
       "returns": "Control",
@@ -149,7 +159,12 @@
     "Tab.Section": {
       "signature": "Tab:Section(options)",
       "returns": "Section",
-      "contract": "String or {Title, Id, Column}. Stable unique Id; Column Left/Right, alternating by default."
+      "contract": "String or {Title, Id, Column, Icon}. Stable unique Id; Column Left/Right, alternating by default; Icon defaults grip-vertical."
+    },
+    "Tab.SetIcon": {
+      "signature": "Tab:SetIcon(name)",
+      "returns": "self",
+      "contract": "Replace sidebar and dock icon together; preserve current selection and theme bindings."
     },
     "Window.CaptureDefaults": {
       "signature": "Window:CaptureDefaults()",
@@ -200,6 +215,11 @@
       "signature": "Window:ExportProfile()",
       "returns": "JSON string",
       "contract": "Version=1, Values, Appearance and Layout. Persist=false controls and destroyed controls are excluded."
+    },
+    "Window.Focus": {
+      "signature": "Window:Focus(target)",
+      "returns": "boolean, error?",
+      "contract": "Open/restore the window and focus a control or owned GuiObject. Omit target to focus current popup/modal/page; requires GamepadNavigation=true."
     },
     "Window.GetConfigStatus": {
       "signature": "Window:GetConfigStatus()",
@@ -260,6 +280,11 @@
       "signature": "Window:OnConfigsChanged(callback)",
       "returns": "Disconnect handle",
       "contract": "Observe list/metadata changes. This is not a callback for every control edit."
+    },
+    "Window.Ready": {
+      "signature": "Window:Ready(options)",
+      "returns": "boolean, status-or-error",
+      "contract": "After building UI, capture defaults once, optionally create Default config and configure Adapter/Key/Load/AutoSave/Debounce/OnStatus. No adapter reports Session only. Repeated successful calls preserve current edits; failed loading can be retried."
     },
     "Window.RefreshUserProfile": {
       "signature": "Window:RefreshUserProfile()",

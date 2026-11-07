@@ -1,6 +1,6 @@
 # Implementation map and regression invariants
 
-Version 0.8.0. These details guide maintenance; app integrations use public API.
+Version 1.0.0. These details guide maintenance; app integrations use public API.
 
 | Source | Responsibility |
 |---|---|
@@ -53,6 +53,12 @@ Only one owned popup, key capture or drag should hold its input interaction.
 Hiding, disabling, destroying and switching tabs cancel owned interactions and
 release focus. Typing must not trigger keybind actions. Touch and mouse paths need
 independent manual verification; mouse-only results do not prove gamepad support.
+
+Responsive mobile mode fills the safe viewport with a 56px navigation rail and
+readable text instead of scaling down the 900px desktop window. It preserves the
+desktop size/position. Focus targets are registered explicitly, scoped to this
+window, modal or popup, and released on hide/disable/destroy. Deferred recovery
+may only claim an empty selection; it must not steal a newer popup focus.
 
 Two columns activate at content width >=580 logical pixels; compact rows below
 460. Column gap 14, card gap 16. CanvasSize is managed explicitly; do not mix an

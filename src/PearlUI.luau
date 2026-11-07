@@ -5558,6 +5558,7 @@ function Window:Ready(options)
 		return true, self:GetPersistenceStatus()
 	end
 	self._ready = true
+	if self._persistence then return true,self:GetPersistenceStatus() end
 	return true, "Session only"
 end
 

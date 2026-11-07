@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "libraryVersion": "0.8.0",
+  "libraryVersion": "1.0.0",
   "description": "Reference catalog, not a settings document or a constructor table. JSON null denotes an unset optional value; symbolic Roblox values must be resolved in Luau.",
   "constructor": {
     "Title": "Pearl UI",
@@ -14,7 +14,9 @@
     "ReduceMotion": false,
     "AnimationSpeed": 0.2,
     "ToggleKey": "Enum.KeyCode.RightShift",
-    "ConfigScope": "global"
+    "ConfigScope": "global",
+    "Responsive": true,
+    "GamepadNavigation": true
   },
   "initialState": {
     "WindowSize": [
@@ -72,6 +74,18 @@
       ],
       "recoveryHandleWidth": 22,
       "displayOrderOffset": 1
+    },
+    "responsive": {
+      "enabled": true,
+      "mobileBreakpoint": 640,
+      "touchLandscapeBelowHeight": 500,
+      "mobileSidebarWidth": 56,
+      "mobileScaleRange": [
+        0.85,
+        1.1
+      ],
+      "mobileMargin": 8,
+      "touchTargetHeight": 44
     }
   },
   "tab": {
@@ -82,7 +96,8 @@
   "section": {
     "Title": "Section",
     "Id": "<Tab.Name>.<Title>",
-    "Column": "alternating Left then Right"
+    "Column": "alternating Left then Right",
+    "Icon": "grip-vertical"
   },
   "controlCommon": {
     "Label": "control kind",
@@ -93,7 +108,8 @@
     "DisabledReason": null,
     "Persist": true,
     "ResetGroup": "Controls",
-    "Id": "<Tab.Name>.<Section.Title>.<Label> for value controls; no persisted Id for Button/Label"
+    "Id": "<Tab.Name>.<Section.Title>.<Label> for value controls; no persisted Id for Button/Label",
+    "Icon": null
   },
   "controls": {
     "Toggle": {
@@ -110,7 +126,8 @@
       "Options": "required: nonempty array of unique strings",
       "Multi": false,
       "Searchable": true,
-      "Default": "first option (single), empty array (multi)"
+      "Default": "first option (single), empty array (multi)",
+      "PageSize": 50
     },
     "ColorPicker": {
       "Default": "current theme/custom accent Color3",
@@ -314,5 +331,11 @@
         "Accent": "#167782"
       }
     }
+  },
+  "ready": {
+    "DefaultConfig": "Default",
+    "Key": "settings",
+    "Adapter": null,
+    "note": "Ready with no adapter is session-only; no automatic disk or server dependency"
   }
 }

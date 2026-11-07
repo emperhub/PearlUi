@@ -72,6 +72,7 @@ return function(PearlUI, window)
 		table.insert(names,name)
 		bench.Factories[name]=function()
 			local options=table.clone(settings);options.Label=name;options.Id="lab.control."..name;options.Persist=false
+			options.Icon=({Toggle="power",Slider="sliders-horizontal",Dropdown="list",ColorPicker="palette",Input="text-cursor-input",Keybind="keyboard",Button="play",Label="info"})[kind]
 			options.Callback=function(value,alpha)changed(name,value,alpha)end
 			local control=showcase[kind](showcase,options);bench.Controls[name]=control;return control
 		end
@@ -91,6 +92,7 @@ return function(PearlUI, window)
 		c:Set(value,silent);return c:Get()
 	end
 	menu(controlActions,"Control API",{
+		{"Change control icon","Control.SetIcon",function()local c=current();c:SetIcon(c.Icon and nil or "star");return c.Icon and "star" or "No icon" end},
 		{"Read value","Control.Get",function()return current():Get()end},
 		{"Serialize value","Control.Serialize",function()return current():Serialize()end},
 		{"Set sample value","Control.Set",function()return setExample(false)end},
@@ -146,6 +148,7 @@ return function(PearlUI, window)
 	end})
 	register("Window.SetSize","Window lab / Window size")
 	menu(geometry,"Window actions",{
+		{"Focus with gamepad","Window.Focus",function()return window:Focus()end},
 		{"Hide for two seconds","Window.SetVisible",function()window:SetVisible(false);window:_later(2,function()window:SetVisible(true)end);return "Returns in two seconds"end},
 		{"Minimize to dock","Window.SetMinimized",function()window:SetMinimized(true);return "Use Open Pearl UI on the dock"end},
 		{"Maximize / restore","Window.SetMaximized",function()window:SetMaximized(not window.Maximized);return window.Maximized end},
@@ -157,6 +160,8 @@ return function(PearlUI, window)
 	for _,s in ipairs(window.Sections)do local name=s.Tab.Name.." / "..s.Title;table.insert(sectionNames,name);sections[name]=s end
 	local selectedPanel=panels:Dropdown({Id="lab.panel",Persist=false,Label="Target panel",Options=sectionNames})
 	menu(panels,"Panel actions",{
+		{"Change section icon","Section.SetIcon",function()sections[selectedPanel:Get()]:SetIcon("sparkles");return "sparkles"end},
+		{"Change tab icon","Tab.SetIcon",function()sections[selectedPanel:Get()].Tab:SetIcon("star");return "star"end},
 		{"Detach selected","Section.Detach",function()sections[selectedPanel:Get()]:Detach();return selectedPanel:Get()end},
 		{"Reveal selected","Section.Reveal",function()sections[selectedPanel:Get()]:Reveal();return selectedPanel:Get()end},
 		{"Dock selected","Section.Dock",function()sections[selectedPanel:Get()]:Dock();return selectedPanel:Get()end},
@@ -192,6 +197,7 @@ return function(PearlUI, window)
 		{"Request sample reset","Window.RequestReset",function()sampleWindow():RequestReset("All");return "Confirm or cancel in the sample"end},
 	})
 	menu(sandboxActions,"Storage adapter",{
+		{"Initialize sample defaults","Window.Ready",function()local ok,e=sampleWindow():Ready({DefaultConfig=false});assert(ok,e);return e end},
 		{"Connect memory storage","Window.ConfigurePersistence",function()local w=sampleWindow();memory=memory or {};local adapter={Load=function(k)return memory[k]end,Save=function(k,v)memory[k]=v;return true end};local ok,e=w:ConfigurePersistence({Adapter=adapter,Key="sample",AutoSave=false});assert(ok,e);return w:GetPersistenceStatus()end},
 		{"Save sample settings","Window.SaveSettings",function()local ok,e=sampleWindow():SaveSettings();assert(ok,e);return "Sample settings saved"end},
 		{"Reload sample settings","Window.LoadSettings",function()local ok,e=sampleWindow():LoadSettings();assert(ok,e);return "Sample settings restored"end},

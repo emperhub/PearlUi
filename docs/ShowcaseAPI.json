@@ -1,6 +1,6 @@
 {
-  "version": "0.8.0",
-  "publicAPIs": 76,
+  "version": "1.0.0",
+  "publicAPIs": 81,
   "locations": {
     "Section.Button": "Components / All components / Button",
     "ColorPicker.SetAlpha": "Control inspector / Color API / Set alpha to 35%",
@@ -77,6 +77,11 @@
     "Window.SetOpacity": "Window lab / Panel opacity",
     "Window.GetConfigStatus": "Sample window / Sample configs / Read config status",
     "Window.ValidateConfig": "Sample window / Sample configs / Validate sample buffer",
-    "Window.LoadProfile": "Sample window / Sample configs / Load legacy profile"
+    "Window.LoadProfile": "Sample window / Sample configs / Load legacy profile",
+    "Control.SetIcon": "Control inspector / Control API / Change control icon",
+    "Tab.SetIcon": "Panels & navigation / Panel actions / Change tab icon",
+    "Section.SetIcon": "Panels & navigation / Panel actions / Change section icon",
+    "Window.Focus": "Window & dock / Window actions / Focus with gamepad",
+    "Window.Ready": "Sample window / Storage adapter / Initialize sample defaults"
   }
 }

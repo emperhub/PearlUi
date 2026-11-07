@@ -1,5 +1,10 @@
 # PearlUI
 
+**1.0.0** พร้อมไอคอนทุกคอนโทรล เลย์เอาต์มือถือ การนำทางเกมแพด Dropdown แบบแบ่งหน้า และ Ready สำหรับตั้งค่าเริ่มต้น/การบันทึก
+
+เริ่มที่ [คู่มือติดตั้งและใช้จริง](docs/GettingStarted.md) หรือ [Starter.client.luau](examples/Starter.client.luau)
+รองรับการใช้แบบ session ทันที; การจำค่าข้ามครั้งต้องต่อ adapter ตามคู่มือ
+
 รองรับ [Lucide ครบ 2,029 ไอคอน](docs/Icons.md) ในตัวไลบรารี ใช้ `Icon = "shield-check"`
 หรือชื่อไอคอนอื่นได้ทันที ดูรายชื่อใน `PearlUI.Icons` และ alias ใน `PearlUI.IconAliases`
 

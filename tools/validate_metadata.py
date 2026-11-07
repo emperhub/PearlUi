@@ -11,7 +11,7 @@ defaults = json.loads(read('defaults/PearlUI.defaults.json'))
 showcase = json.loads(read('docs/ShowcaseAPI.json'))
 assert api['version'] == defaults['libraryVersion'] == sync_skill.VERSION
 assert set(api['methods']) == set(sync_skill.public_api()) == set(showcase['locations'])
-assert len(api['methods']) == showcase['publicAPIs'] == 76
+assert len(api['methods']) == showcase['publicAPIs'] == 81
 for key,signature in sync_skill.public_api().items():
     assert api['methods'][key]['signature'] == signature, key
     assert re.fullmatch(r'[\w.:]+\([^()\n]*\)', signature), ('Malformed signature', key)
@@ -58,4 +58,4 @@ assert len(names)==len(set(names))==catalog['count']==2029
 assert set(names)==set(catalog['icons'])=={f.stem for f in (root/'assets/lucide').glob('*.svg')}
 assert len(aliases)==296 and all(n in catalog['icons'] for n in aliases.values())
 assert (root/'skills/pearl-ui/references/icons.md').is_file()
-print('PASS: 76 API contracts, 9 palettes, 2,029 icons / 296 aliases, defaults, showcase and skill links')
+print('PASS: 81 API contracts, 9 palettes, 2,029 icons / 296 aliases, defaults, showcase and skill links')

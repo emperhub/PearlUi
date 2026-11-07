@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0 — 2026-11-07
+
+- Added optional Lucide icons to every control and section, plus dynamic Control/Tab/Section SetIcon methods with stable IDs and values.
+- Added responsive phone/portrait/touch-landscape layout, 44px touch hit areas, narrow-viewport Dock/popup fitting and independent finger ownership.
+- Added scoped gamepad focus rings, safe modal focus, Select/Back, shoulder tab navigation and D-pad slider/color changes without global navigation changes.
+- Bounded dropdown rendering with PageSize=50 and whole-list search; corrected color pointer coordinates and deferred-focus races.
+- Added Ready for construction defaults, default config and explicit storage setup, a session-only starter and a production integration guide.
+- The new 114-check release suite exercises synthetic viewport/input/storage cases. See the release validation report for actual completed suites and device limitations.
+
 ## Lucide catalog — 2026-11-07
 
 - Bundled all 2,029 canonical icons and 296 upstream aliases at the existing pinned Lucide revision.

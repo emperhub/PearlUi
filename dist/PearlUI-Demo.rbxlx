@@ -10,19 +10,20 @@
       <Properties>
         <string name="Name">PearlUI</string>
         <ProtectedString name="Source">--!nocheck
--- PearlUI v0.8.0 | MIT License | Client-side, dependency-free UI library.
+-- PearlUI v1.0.0 | MIT License | Client-side, dependency-free UI library.
 local Players = game:GetService("Players")
 local Input = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
 
-local PearlUI = { Version = "0.8.0" }
+local PearlUI = { Version = "1.0.0" }
 local Window, Tab, Section, Control = {}, {}, {}, {}
 Window.__index, Tab.__index, Section.__index = Window, Tab, Section
 Control.__index = Control
 local FONT, MEDIUM = Enum.Font.Gotham, Enum.Font.GothamMedium
 local WINDOW_RADIUS, CARD_RADIUS, FIELD_RADIUS = 14, 12, 7
+local navigationWindow
 local THEMES = {
 	Light = {
 		Window = Color3.fromRGB(244, 245, 249), Sidebar = Color3.fromRGB(231, 234, 242),
@@ -115,7 +116,8 @@ end
 
 local function button(parent, value)
 	return make("TextButton", {
-		Text = value or "", Font = MEDIUM, TextSize = 12, AutoButtonColor = false,
+		Text = value or "", Font = MEDIUM, TextSize = 12, AutoButtonColor = false, Selectable = false,
+		TextTruncate = Enum.TextTruncate.AtEnd, TextWrapped = false, ClipsDescendants = true,
 		BorderSizePixel = 0, BackgroundTransparency = 1,
 	}, parent)
 end
@@ -188,6 +190,15 @@ end
 
 function Control:_cancelInteraction()
 	local window = self.Window
+	local selected = GuiService.SelectedObject
+	if selected and selected:IsDescendantOf(self.Row) then
+		GuiService.SelectedObject = nil
+		if window.Visible and not window.Minimized then window:_later(0,function()
+			if not window.Destroyed and window.Visible and not window.Minimized and not GuiService.SelectedObject then
+				window:_chooseFocus(window._confirmation and window._confirmation.Root or window._popup or (window.ActiveTab and window.ActiveTab.Page) or window.Main)
+			end
+		end) end
+	end
 	if window._popupOwner == self or (window._popupAnchor and window._popupAnchor:IsDescendantOf(self.Row)) then window:_closeMenu() end
 	if window._slider and window._slider.control == self then
 		if window._slider.finish then window._slider.finish() end
@@ -209,8 +220,8 @@ function Control:SetDisabled(disabled, reason)
 	if self.Disabled then self:_cancelInteraction() end
 	if not self.Disabled and self.Window._tooltipOwner == self then self.Window:_hideTooltip() end
 	for _, object in ipairs(self.Row:GetDescendants()) do
-		if object:IsA("GuiButton") and object ~= self.DisabledOverlay then object.Interactable = not self.Disabled end
-		if object:IsA("TextBox") then object.TextEditable = not self.Disabled end
+		if object:IsA("GuiButton") and object ~= self.DisabledOverlay then object.Interactable = not self.Disabled; object.Selectable = not self.Disabled and self.Window._focusables[object] == true end
+		if object:IsA("TextBox") then object.TextEditable = not self.Disabled; object.Selectable = not self.Disabled and self.Window._focusables[object] == true end
 	end
 	return self
 end
@@ -236,7 +247,12 @@ function Control:Close()
 end
 
 function Control:_layoutRow(compact)
-	if self._compactLayout == compact then return end
+	local touch = self.Window._touchTargets == true
+	compact = compact or touch
+	local hit = self.Row:FindFirstChild("ToggleHitArea")
+	if hit then hit.Visible = touch end
+	if self._compactLayout == compact and self._touchLayout == touch then return end
+	self:_positionIcon(false)
 	local field = self.Field or self.Row:FindFirstChild(self.Type)
 	if not self._wideLayout then
 		self._wideLayout = { Row = self.Row.Size, TitlePosition = self.LabelText.Position, TitleSize = self.LabelText.Size,
@@ -244,13 +260,14 @@ function Control:_layoutRow(compact)
 			DescriptionPosition = self.DescriptionText and self.DescriptionText.Position, DescriptionSize = self.DescriptionText and self.DescriptionText.Size,
 			ValuePosition = self.ValueText and self.ValueText.Position, ValueSize = self.ValueText and self.ValueText.Size }
 	end
-	self._compactLayout = compact
+	self._compactLayout, self._touchLayout = compact, touch
 	local wide = self._wideLayout
 	if not compact then
 		self.Row.Size, self.LabelText.Position, self.LabelText.Size = wide.Row, wide.TitlePosition, wide.TitleSize
 		if field then field.Position, field.Size = wide.FieldPosition, wide.FieldSize end
 		if self.DescriptionText then self.DescriptionText.Position, self.DescriptionText.Size = wide.DescriptionPosition, wide.DescriptionSize end
 		if self.ValueText then self.ValueText.Position, self.ValueText.Size = wide.ValuePosition, wide.ValueSize end
+		self:_positionIcon(true)
 		return
 	end
 	local hasDescription = self.DescriptionText ~= nil
@@ -269,6 +286,17 @@ function Control:_layoutRow(compact)
 		if field then field.Position, field.Size = UDim2.new(0, 0, 1, -34), UDim2.new(1, 0, 0, self.Type == "Slider" and 30 or 29) end
 		if self.Type == "Slider" and self.ValueText then self.ValueText.Position, self.ValueText.Size = UDim2.new(1, -60, 0, 4), UDim2.fromOffset(60, 22) end
 	end
+	if touch then
+		if self.Type ~= "Label" and self.Type ~= "Toggle" then
+			self.Row.Size = UDim2.new(1,0,0,82 + (hasDescription and 20 or 0))
+			if field then field.Position,field.Size = UDim2.new(0,0,1,-48),UDim2.new(1,0,0,44) end
+		elseif self.Type == "Toggle" then
+			self.Row.Size = UDim2.new(1,0,0,hasDescription and 68 or 52)
+			local hit = self.Row:FindFirstChild("ToggleHitArea")
+			if hit then hit.Visible = true end
+		end
+	end
+	self:_positionIcon(true)
 end
 
 function Control:_complete()
@@ -279,6 +307,13 @@ function Control:_complete()
 		local objects = self.Row:GetDescendants(); table.insert(objects, self.Row)
 		for _, object in ipairs(objects) do if object:IsA("GuiObject") then object:SetAttribute("PearlDockZ", object.ZIndex); object.ZIndex += 42 + (self.Section._panelLayer or 0) end end
 	end
+	for _,object in ipairs(self.Row:GetDescendants()) do
+		if self.Window._focusables[object] then
+			self._focusTarget = self._focusTarget or object
+			self.Window._focusControls[object] = self
+		end
+	end
+	self:SetIcon(self._requestedIcon)
 	if self.Section._availableWidth then self:_layoutRow(self.Section._availableWidth &lt; 460) end
 	self:SetDisabled(self.Disabled, self.DisabledReason)
 	self.Window:_filter(self.Window.Search.Text)
@@ -333,7 +368,7 @@ function Window:_text(parent, value, size, bold, role)
 end
 
 function Window:_duration(multiplier)
-	return self.ReduceMotion and 0 or math.clamp(self.AnimationSpeed, 0.05, 0.6) * (multiplier or 1)
+	return (self.ReduceMotion or GuiService.ReducedMotionEnabled) and 0 or math.clamp(self.AnimationSpeed, 0.05, 0.6) * (multiplier or 1)
 end
 
 function Window:_stop(object, property)
@@ -525,6 +560,7 @@ function Window:_show(root, shown, force, finished, offset)
 end
 
 function Window:_feedback(object, options)
+	self:_focusable(object)
 	options = options or {}
 	local overlay = make("Frame", { Name = "HoverTint", BackgroundTransparency = 1, BorderSizePixel = 0, Size = UDim2.fromScale(1, 1), ZIndex = object.ZIndex + 1 }, object)
 	corner(overlay, options.Radius or FIELD_RADIUS)
@@ -548,6 +584,7 @@ function Window:_feedback(object, options)
 end
 
 function Window:_focusFeedback(field)
+	self:_focusable(field)
 	local line = field:FindFirstChildOfClass("UIStroke")
 	self:_connect(field.Focused, function() self:_tween(line, { Color = self.Palette.Accent, Thickness = 1.5, Transparency = 0 }, 0.65) end)
 	self:_connect(field.FocusLost, function() self:_tween(line, { Color = self.Palette.Border, Thickness = 1, Transparency = 0.12 }, 0.65) end)
@@ -3012,6 +3049,7 @@ function Window:_icon(parent, kind, colorRole)
 end
 
 function Window:_prune()
+    for object in pairs(self._focusables) do if not object.Parent then self._focusables[object] = nil; self._gamepadAdjust[object] = nil; self._focusControls[object] = nil end end
 	for index = #self._skins, 1, -1 do if not self._skins[index][1].Parent then table.remove(self._skins, index) end end
 	for index = #self._surfaces, 1, -1 do if not self._surfaces[index].Parent then table.remove(self._surfaces, index) end end
 	for index = #self._connections, 1, -1 do if not self._connections[index].Connected then table.remove(self._connections, index) end end
@@ -3079,6 +3117,8 @@ end
 
 function Window:_closeMenu()
 	local menu = self._popup
+	local previous = self._popupAnchor
+	local restore = menu and GuiService.SelectedObject and GuiService.SelectedObject:IsDescendantOf(menu)
 	if self._popupOwner then self._popupOwner._menu = nil end
 	if self._popupScrollConnection then self._popupScrollConnection:Disconnect(); self._popupScrollConnection = nil end
 	local focused = Input:GetFocusedTextBox()
@@ -3088,6 +3128,7 @@ function Window:_closeMenu()
 	if self._popupArrow then self:_tween(self._popupArrow, { Rotation = 0 }, 0.7); self._popupArrow = nil end
 	if menu then self:_show(menu, false, false, function() self._visibility[menu] = nil; menu:Destroy(); self:_prune() end, Vector2.new(0, -6)) end
 	self.MenuDismiss.Visible = false
+	if restore then self:_restoreSelection(previous) end
 end
 
 function Window:_popupMenu(anchor, entries, chosen, onSelect, arrow)
@@ -3126,6 +3167,7 @@ end
 function Window:_beginDrag(input, target, threshold)
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
 	if target == self.Main and self.Maximized then return end
+	if target == self.Main and self._mobileLayout then return end
 	self:_settleVisibility(target)
 	self:_stop(target, "Position")
 	if target == self.Main then self:_stop(target, "Size"); target.Size = UDim2.fromOffset(self.WindowSize.X, self.WindowSize.Y) end
@@ -3228,7 +3270,7 @@ function Window:RevealDock(immediate)
 end
 
 function Window:_beginResize(input)
-	if self.Maximized or not self.Visible or self.Minimized then return end
+	if self.Maximized or self._mobileLayout or not self.Visible or self.Minimized then return end
 	if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
 	self:_settleVisibility(self.Main)
 	self:_stop(self.Main)
@@ -3289,22 +3331,31 @@ function Window:_endPointer(input)
 	if owns(self._colorDrag) then self._colorDrag = nil end
 end
 
-function Window:_layout(animate)
+function Window:_layout(animate, viewportOverride, preferredInputOverride)
 	if self.Destroyed then return end
 	self:_settleVisibility(self.Main)
 	self:_stop(self.Main)
 	local previousPosition, previousSize = self.Main.Position, self.Main.Size
-	local viewport = self.Gui.AbsoluteSize
+	local viewport = viewportOverride or self.Gui.AbsoluteSize
 	if viewport.X &lt; 1 or viewport.Y &lt; 1 then return end
 	local fit = math.min((viewport.X - 24) / self.WindowSize.X, (viewport.Y - 24) / self.WindowSize.Y)
-	self._actualScale = math.max(0.2, math.min(self.Scale, fit))
+	local preferred = preferredInputOverride or Input.PreferredInput
+	local mobile = self.Responsive and (viewport.X &lt; 640 or (preferred == Enum.PreferredInput.Touch and viewport.Y &lt; 500))
+	if mobile and not self._mobileLayout then self._desktopPosition = self.Main.Position
+	elseif not mobile and self._mobileLayout and self._desktopPosition then self.Main.Position = self._desktopPosition end
+	self._mobileLayout = mobile
+	self._touchTargets = mobile or preferred == Enum.PreferredInput.Touch
+	self._actualScale = mobile and math.clamp(self.Scale,0.85,1.1) or math.max(0.2, math.min(self.Scale, fit))
 	self.UIScale.Scale = self._actualScale
 	self._rootWidth, self._rootHeight = viewport.X / self._actualScale, viewport.Y / self._actualScale
 	self.Root.Size = UDim2.fromOffset(self._rootWidth, self._rootHeight)
 	self.DockUIScale.Scale = self._actualScale
-	self._dockWidth, self._dockHeight = self.DockGui.AbsoluteSize.X / self._actualScale, self.DockGui.AbsoluteSize.Y / self._actualScale
+	local dockViewport = viewportOverride or self.DockGui.AbsoluteSize
+	self._dockWidth, self._dockHeight = dockViewport.X / self._actualScale, dockViewport.Y / self._actualScale
 	self.DockRoot.Size = UDim2.fromOffset(self._dockWidth, self._dockHeight)
-	if self.Maximized then
+	if mobile then
+		self.Main.Position, self.Main.Size = UDim2.fromOffset(8,8),UDim2.fromOffset(self._rootWidth-16,self._rootHeight-16)
+	elseif self.Maximized then
 		self.Main.Position, self.Main.Size = UDim2.fromOffset(12, 12), UDim2.fromOffset(self._rootWidth - 24, self._rootHeight - 24)
 	else
 		self.Main.Size = UDim2.fromOffset(self.WindowSize.X, self.WindowSize.Y)
@@ -3313,7 +3364,9 @@ function Window:_layout(animate)
 			self._positioned = true
 		end
 	end
-	self.ResizeHandle.Visible = not self.Maximized
+	self.ResizeHandle.Visible = not self.Maximized and not mobile
+	self:_responsiveChrome(mobile)
+	self.Dock.Size = UDim2.fromOffset(math.min(330,self._dockWidth-16),54)
 	self:_clamp(self.Main)
 	if animate and self.Main.Visible then
 		local position, size = self.Main.Position, self.Main.Size
@@ -3337,10 +3390,19 @@ end
 
 function PearlUI.new(options)
 	options = options or {}
+	assert(type(options) == "table", "Window options must be a table")
+	for _,key in ipairs({"Title","Name","Theme","ConfigScope"}) do assert(options[key] == nil or (type(options[key]) == "string" and options[key] ~= ""), key .. " must be a nonempty string") end
+	for _,key in ipairs({"Scale","AnimationSpeed"}) do assert(options[key] == nil or (finite(options[key]) and options[key] &gt; 0), key .. " must be positive and finite") end
+	for _,key in ipairs({"ReduceMotion","Responsive","GamepadNavigation"}) do assert(options[key] == nil or type(options[key]) == "boolean", key .. " must be boolean") end
+	assert(options.Accent == nil or typeof(options.Accent) == "Color3", "Accent must be Color3")
+	assert(options.ToggleKey == nil or (typeof(options.ToggleKey) == "EnumItem" and options.ToggleKey.EnumType == Enum.KeyCode and options.ToggleKey ~= Enum.KeyCode.Unknown), "ToggleKey must be a KeyCode")
+	assert(options.DisplayOrder == nil or (finite(options.DisplayOrder) and options.DisplayOrder % 1 == 0 and options.DisplayOrder &gt;= -2147483648 and options.DisplayOrder &lt; 2147483647), "DisplayOrder must be an integer")
 	local player = Players.LocalPlayer
 	assert(options.Parent or player, "PearlUI must be created from a LocalScript")
 	local self = setmetatable({
 		Title = options.Title or "Pearl UI", Tabs = {}, Sections = {}, Controls = {}, _ids = {}, _sectionIds = {},
+		Responsive = options.Responsive ~= false, GamepadNavigation = options.GamepadNavigation ~= false,
+		_focusables = {}, _focusControls = {}, _gamepadAdjust = {}, _nextSelectionOrder = 1, _chromeButtons = {}, _chromeTouchButtons = {},
 		_connections = {}, _skins = {}, _surfaces = {}, _refresh = {}, _profiles = {}, _configBanks = {}, _configListeners = {}, ConfigScope = options.ConfigScope or "global", _tweens = {}, _visibility = {}, _jobs = {},
 		Theme = options.Theme or "Light", Scale = options.Scale or 1,
 		Columns = options.Columns or 2,
@@ -3395,18 +3457,26 @@ function PearlUI.new(options)
 	title.Size, title.TextXAlignment, title.ZIndex = UDim2.new(1, -380, 1, 0), Enum.TextXAlignment.Center, 4
 	title.Position = UDim2.fromOffset(190, 0)
 	self:_drag(title, self.Main)
+	self._titleLabel, self._dragArea = title, dragArea
 	local colors = { Color3.fromRGB(255, 95, 87), Color3.fromRGB(255, 189, 46), Color3.fromRGB(40, 201, 64) }
 	for index, color in ipairs(colors) do
 		local dot = button(titlebar, "")
+		table.insert(self._chromeButtons, dot)
 		dot.Name = ({ "Close", "Minimize", "Maximize" })[index]
 		dot.Size, dot.Position = UDim2.fromOffset(12, 12), UDim2.fromOffset(19 + (index - 1) * 21, 18)
 		dot.BackgroundTransparency, dot.BackgroundColor3, dot.ZIndex = 0, color, 7; corner(dot, 12)
 		self:_feedback(dot, { Radius = 12 })
-		self:_connect(dot.Activated, function()
+		local function activate()
 			if index == 1 then self:SetVisible(false)
 			elseif index == 2 then self:SetMinimized(true)
 			else self:SetMaximized(not self.Maximized) end
-		end)
+		end
+		self:_connect(dot.Activated, activate)
+		local hit = button(titlebar, "")
+		hit.Name,hit.Size,hit.ZIndex,hit.Visible = dot.Name .. "Touch",UDim2.fromOffset(44,44),8,false
+		self:_feedback(hit,{NoScale=true,Radius=12})
+		self:_connect(hit.Activated,activate)
+		table.insert(self._chromeTouchButtons,hit)
 	end
 	local divider = make("Frame", { BorderSizePixel = 0, Position = UDim2.fromOffset(0, 47), Size = UDim2.new(1, 0, 0, 1), ZIndex = 4 }, titlebar)
 	self:_skin(divider, "BackgroundColor3", "Border")
@@ -3422,12 +3492,13 @@ function PearlUI.new(options)
 	local searchIcon = self:_icon(titlebar, "search")
 	searchIcon.Position, searchIcon.Size, searchIcon.ZIndex = UDim2.new(1, -198, 0, 17), UDim2.fromOffset(14, 14), 8
 	for _, child in ipairs(searchIcon:GetDescendants()) do if child:IsA("GuiObject") then child.ZIndex = 8 end end
-	self.Search = search
+	self.Search, self._searchIcon = search, searchIcon
 	self.Sidebar = make("Frame", { Name = "Sidebar", BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.fromOffset(0, 48), Size = UDim2.new(0, 180, 1, -48), ClipsDescendants = true, ZIndex = 3 }, shell)
 	-- Clip the extended top/right edges, leaving only the bottom-left corner rounded.
 	local sidebarBackground = make("Frame", { Name = "SidebarBackground", BorderSizePixel = 0, Position = UDim2.fromOffset(0, -WINDOW_RADIUS), Size = UDim2.new(1, WINDOW_RADIUS, 1, WINDOW_RADIUS), ZIndex = 3 }, self.Sidebar)
 	self:_surface(sidebarBackground, "Sidebar"); corner(sidebarBackground, WINDOW_RADIUS)
 	local sideLabel = self:_text(self.Sidebar, "LIBRARY", 10, true, "Muted")
+	self._sideLabel = sideLabel
 	sideLabel.Position, sideLabel.Size, sideLabel.ZIndex = UDim2.fromOffset(22, 24), UDim2.fromOffset(130, 16), 5
 	local nav = make("ScrollingFrame", { Name = "Navigation", BorderSizePixel = 0, ClipsDescendants = true, AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(), ScrollBarThickness = 2, ScrollingDirection = Enum.ScrollingDirection.Y, BackgroundTransparency = 1, Position = UDim2.fromOffset(10, 54), Size = UDim2.new(1, -20, 1, -164), ZIndex = 4 }, self.Sidebar)
 	list(nav, 6); self.Navigation = nav; self:_skin(nav, "ScrollBarImageColor3", "Border")
@@ -3492,6 +3563,7 @@ function PearlUI.new(options)
 	dockLayout.FillDirection = Enum.FillDirection.Horizontal
 	self:_connect(search:GetPropertyChangedSignal("Text"), function() self:_filter(search.Text) end)
 	self:_connect(Input.InputBegan, function(input, processed)
+		if self:_gamepadInput(input, processed) then return end
 		if self._confirmation then
 			if input.KeyCode == Enum.KeyCode.Escape then self._confirmation:Cancel() end
 			return
@@ -3499,7 +3571,7 @@ function PearlUI.new(options)
 		if input.KeyCode == Enum.KeyCode.Escape and self._popup then self:_closeMenu(); return end
 		if self._capturing and Input:GetFocusedTextBox() then self:_cancelInteractions(); return end
 		if self._capturing then
-			if input.UserInputType == Enum.UserInputType.Keyboard then
+			if input.UserInputType == Enum.UserInputType.Keyboard or input.UserInputType.Name:match("^Gamepad") then
 				local control = self._capturing; self._capturing = nil
 				if input.KeyCode ~= Enum.KeyCode.Escape and input.KeyCode ~= Enum.KeyCode.Unknown then control:Set(input.KeyCode.Name) else control:_render() end
 			end
@@ -3512,6 +3584,18 @@ function PearlUI.new(options)
 		end
 	end)
 	self:_connect(Input.InputChanged, function(input) self:_updatePointer(input) end)
+	self:_connect(Input:GetPropertyChangedSignal("PreferredInput"), function() self:_layout() end)
+	self:_connect(Input:GetPropertyChangedSignal("OnScreenKeyboardVisible"), function()
+		self._keyboardInset=Input.OnScreenKeyboardVisible and Input.OnScreenKeyboardSize.Y/(self._actualScale or 1) or 0
+		for _,tab in ipairs(self.Tabs) do tab:_queueLayout() end
+		local focused = Input:GetFocusedTextBox()
+		if focused and self:_ownsFocus(focused) then
+			if self._popup and focused:IsDescendantOf(self._popup) then
+				self:_stop(self._popup,"Position");self._popup.Position=UDim2.fromOffset(self._popup.Position.X.Offset,8)
+			end
+			self:_later(.1,function() if not self.Destroyed and focused.Parent then self:_scrollTo(focused) end end)
+		end
+	end)
 	self:_connect(Input.InputEnded, function(input) self:_endPointer(input) end)
 	self:_connect(self.Gui:GetPropertyChangedSignal("AbsoluteSize"), function() self:_layout() end)
 	self:_connect(self.DockGui:GetPropertyChangedSignal("AbsoluteSize"), function() self:_layout() end)
@@ -3521,9 +3605,12 @@ function PearlUI.new(options)
 		self:_connect(player:GetPropertyChangedSignal("DisplayName"), function() self:RefreshUserProfile() end)
 		self:_connect(player.CharacterAdded, function() self:RefreshUserProfile() end)
 	end
+	self:_selectionGroup(self.Root); self:_selectionGroup(self.DockRoot)
+	navigationWindow = self
 	self:_layout()
 	self:RefreshUserProfile()
 	self:_later(0, function() if self.Visible and not self.Minimized then self:_show(self.Main, true, true) end end)
+	if Input.PreferredInput == Enum.PreferredInput.Gamepad then self:_later(0,function() if not self.Destroyed and not GuiService.SelectedObject then self:Focus() end end) end
 	return self
 end
 
@@ -3623,6 +3710,7 @@ function Window:SetToggleKey(key)
 end
 
 function Window:SetVisible(visible)
+	local selected = GuiService.SelectedObject
 	self.Visible = visible == true
 	if not self.Visible and self._confirmation then self._confirmation:Cancel() end
 	self.AvatarFallback.Visible = self.UserAvatar.Image == "" or not self.UserAvatar.IsLoaded
@@ -3637,6 +3725,12 @@ function Window:SetVisible(visible)
 	self:_show(self.Main, self.Visible and not self.Minimized)
 	self:_syncDock()
 	for _, section in ipairs(self.Sections) do if section.Float then self:_show(section.Float, self.Visible and not self.Minimized and section.Detached) end end
+	if self:_ownsFocus(selected) and (not self.Visible or self.Minimized) then
+		GuiService.SelectedObject = nil
+		self:_later(self:_duration()+.02,function()
+			if not self.Destroyed and (not self.Visible or self.Minimized) and not GuiService.SelectedObject then self:_restoreSelection(nil) end
+		end)
+	end
 end
 
 function Window:SetMinimized(minimized)
@@ -3732,7 +3826,7 @@ function Tab:_arrange()
 			heights[column] += (item == section.Frame and section:_measureHeight() or 42) + 16
 		end
 	end
-	self.Page.CanvasSize = UDim2.fromOffset(0, math.max(0, math.max(heights[1], heights[2]) - 16) + 4)
+	self.Page.CanvasSize = UDim2.fromOffset(0, math.max(0, math.max(heights[1], heights[2]) - 16) + 4 + (window._keyboardInset or 0))
 end
 
 function Section:_layoutControls(width)
@@ -3741,12 +3835,13 @@ function Section:_layoutControls(width)
 end
 
 function Section:_measureHeight()
-	local height = 54
+	local height = self.Header.Size.Y.Offset + 12
 	for _, control in ipairs(self.Controls) do if not control.Destroyed and control.Row.Visible then height += control.Row.Size.Y.Offset end end
 	return height
 end
 
 function Window:Tab(options)
+	assert(not self.Destroyed, "Window has been destroyed")
 	if type(options) == "string" then options = { Name = options } end
 	options = options or {}
 	local tab = setmetatable({ Window = self, Name = options.Name or "Tab", Description = options.Description or "", Sections = {} }, Tab)
@@ -3782,6 +3877,7 @@ function Window:Tab(options)
 		self.Search.Text = ""; self:SetVisible(true); self:SetMinimized(false); self:SelectTab(tab)
 	end)
 	if not self.ActiveTab then self:SelectTab(tab) end
+	self:_responsiveChrome(self._mobileLayout)
 	return tab
 end
 
@@ -3829,6 +3925,7 @@ function Window:_filter(query)
 		for _, control in ipairs(section.Controls) do
 			local matches = control.Visible and not control.Destroyed and (sectionMatches or string.find(string.lower(control.Label), query, 1, true) ~= nil)
 			control.Row.Visible = matches
+			if not matches then control:_cancelInteraction() end
 			control.Separator.Visible = matches
 			any = any or matches
 			if matches then count += 1; lastVisible = control end
@@ -3853,6 +3950,7 @@ end
 function Tab:Section(options)
 	if type(options) == "string" then options = { Title = options } end
 	options = options or {}
+	assert(type(options)=="table" and (options.Icon==nil or type(options.Icon)=="string"), "Section options/Icon are invalid")
 	local window = self.Window
 	local section = setmetatable({ Window = window, Tab = self, Title = options.Title or "Section", Controls = {}, Detached = false, _nextControlOrder = 0 }, Section)
 	section.Column = options.Column or (#self.Sections % 2 == 0 and "Left" or "Right")
@@ -3864,7 +3962,9 @@ function Tab:Section(options)
 	section.Frame = make("Frame", { Name = "Section_" .. section.Title, Size = UDim2.new(1, -8, 0, 0), AutomaticSize = Enum.AutomaticSize.Y, BorderSizePixel = 0, LayoutOrder = #window.Sections + 1, ZIndex = 6 }, self.Page)
 	window:_surface(section.Frame, "Card"); window:_border(section.Frame, CARD_RADIUS); list(section.Frame, 0)
 	section.Header = make("Frame", { Name = "Header", BackgroundTransparency = 1, Size = UDim2.new(1, 0, 0, 42), LayoutOrder = 0, ZIndex = 7 }, section.Frame)
-	local grip = window:_icon(section.Header, "grip-vertical")
+	assert(options.Icon == nil or type(options.Icon) == "string", "Section Icon must be a name")
+	local grip = window:_icon(section.Header, options.Icon or "grip-vertical")
+	section.Icon = grip
 	grip.Position, grip.Size, grip.ZIndex = UDim2.fromOffset(13, 11), UDim2.fromOffset(17, 21), 8
 	for _, child in ipairs(grip:GetDescendants()) do if child:IsA("GuiObject") then child.ZIndex = 8 end end
 	local title = window:_text(section.Header, section.Title, 13, true)
@@ -3892,6 +3992,7 @@ function Tab:Section(options)
 	window:_feedback(section.Placeholder, { NoScale = true, Radius = 9 })
 	window:_connect(section.Placeholder.Activated, function() section:Reveal() end)
 	table.insert(self.Sections, section); table.insert(window.Sections, section)
+	window:_responsiveChrome(window._mobileLayout)
 	self:_queueLayout()
 	return section
 end
@@ -3935,7 +4036,7 @@ function Section:Detach()
 	end
 	window:_settleVisibility(self.Float)
 	self:_layoutControls(376)
-	self.Float.Size = UDim2.fromOffset(410, math.min(window._rootHeight - 30, math.max(260, self:_measureHeight() + 100)))
+	self.Float.Size = UDim2.fromOffset(math.min(410,window._rootWidth-16), math.min(window._rootHeight - 30, math.max(260, self:_measureHeight() + 100)))
 	local count = 0
 	for _, section in ipairs(window.Sections) do if section ~= self and section.Detached then count += 1 end end
 	self.Float.Position = self._lastFloatPosition or UDim2.fromOffset(window.Main.Position.X.Offset + 54 + (count % 6) * 32, window.Main.Position.Y.Offset + 60 + (count % 6) * 28)
@@ -3997,8 +4098,9 @@ function Section:_row(options, kind)
 	assert(options.Label == nil or type(options.Label) == "string", "Label must be a string")
 	assert(options.Description == nil or type(options.Description) == "string", "Description must be a string")
 	assert(options.DisabledReason == nil or type(options.DisabledReason) == "string", "Disabled reason must be a string")
+	assert(options.Icon == nil or type(options.Icon) == "string", "Icon must be a name")
 	local control = setmetatable({ Window = window, Section = self, Label = options.Label or kind, Type = kind, Callback = options.Callback,
-		Visible = options.Visible ~= false, Disabled = options.Disabled == true, DisabledReason = options.DisabledReason, ResetGroup = options.ResetGroup or "Controls", Persist = options.Persist ~= false,
+		Visible = options.Visible ~= false, Disabled = options.Disabled == true, DisabledReason = options.DisabledReason, _requestedIcon = options.Icon, ResetGroup = options.ResetGroup or "Controls", Persist = options.Persist ~= false,
 		_ownedConnections = {}, _connectionStart = #window._connections, Destroyed = false,
 	}, Control)
 	if kind ~= "Button" and kind ~= "Label" then
@@ -4047,6 +4149,10 @@ function Section:Toggle(options)
 	end
 	control:_render(); window._refresh[control] = function() control:_render() end
 	window:_connect(switch.Activated, function() if control:CanInteract() then control:Set(not control.Value) end end)
+	control.Field = switch
+	local hit = button(control.Row, "")
+	hit.Name,hit.Position,hit.Size,hit.ZIndex,hit.Visible = "ToggleHitArea",UDim2.new(1,-52,.5,-22),UDim2.fromOffset(52,44),14,false
+	window:_connect(hit.Activated,function() if control:CanInteract() then control:Set(not control.Value) end end)
 	return control:_complete()
 end
 
@@ -4088,6 +4194,9 @@ function Section:Slider(options)
 		end
 		valueText.Text = tostring(self.Value) .. (options.Suffix or "")
 	end
+	control.Min,control.Max,control.Step = minimum,maximum,step
+	window._gamepadAdjust[track] = function(x) if x==0 then return false end; if control:CanInteract() then control:Set(control.Value+x*step) end; return true end
+	track.NextSelectionLeft,track.NextSelectionRight = track,track
 	local function update(x)
 		local ratio = math.clamp((x - rail.AbsolutePosition.X) / math.max(1, rail.AbsoluteSize.X), 0, 1)
 		local nextValue = control.Validate(minimum + (maximum - minimum) * ratio)
@@ -4096,7 +4205,8 @@ function Section:Slider(options)
 	window:_connect(track.InputBegan, function(input)
 		if not control:CanInteract() then return end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			window._slider = { input = input, control = control, update = update, finish = function() window:_tween(thumbScale, { Scale = 1 }, 0.55) end }
+			local releaseScroll = input.UserInputType == Enum.UserInputType.Touch and window:_touchScrollLock(control) or function() end
+			window._slider = { input = input, control = control, update = update, finish = function() releaseScroll(); window:_tween(thumbScale, { Scale = 1 }, 0.55) end }
 			window:_tween(thumbScale, { Scale = 1.2 }, 0.55)
 			update(input.Position.X)
 		end
@@ -4108,14 +4218,17 @@ end
 function Window:_openControlPopup(control, name, width, height, arrow)
 	self:_cancelInteractions()
 	local anchor = control.Field
+	local popupScale = math.min(1,(self._rootWidth-16)/width,(self._rootHeight-16)/height)
+	local visibleWidth,visibleHeight = width*popupScale,height*popupScale
 	local position = (anchor.AbsolutePosition - self.Root.AbsolutePosition) / self._actualScale
 	local below = position.Y + anchor.AbsoluteSize.Y / self._actualScale + 5
-	local y = below + height &gt; self._rootHeight - 8 and position.Y - height - 5 or below
+	local y = below + visibleHeight &gt; self._rootHeight - 8 and position.Y - visibleHeight - 5 or below
 	local popup = make("Frame", {
-		Name = name, Position = UDim2.fromOffset(math.clamp(position.X, 8, math.max(8, self._rootWidth - width - 8)), math.max(8, y)),
+		Name = name, Position = UDim2.fromOffset(math.clamp(position.X, 8, math.max(8, self._rootWidth - visibleWidth - 8)), math.clamp(y,8,math.max(8,self._rootHeight-visibleHeight-8))),
 		Size = UDim2.fromOffset(width, height), BorderSizePixel = 0, ZIndex = 101,
 	}, self.Root)
-	self:_surface(popup, "Card"); self:_border(popup, 11)
+	if popupScale &lt; 1 then make("UIScale",{Name="PopupFit",Scale=popupScale},popup) end
+	self:_surface(popup, "Card"); self:_border(popup, 11); self:_selectionGroup(popup)
 	self._popup, self._popupAnchor, self._popupArrow, self._popupOwner = popup, anchor, arrow, control
 	if arrow then self:_tween(arrow, { Rotation = 180 }, 0.7) end
 	self.MenuDismiss.Visible = true
@@ -4131,78 +4244,109 @@ function Window:_openControlPopup(control, name, width, height, arrow)
 end
 
 function Window:_dropdownPopup(control)
-	local searchable = control.Searchable
-	local listHeight = math.min(#control.Options * 32 + 4, 196)
-	local top = searchable and 46 or 8
-	local height = top + listHeight + (control.Multi and 42 or 8)
-	local menu = self:_openControlPopup(control, "SearchDropdown", 258, height, control.Arrow)
-	local state = { Frame = menu, Rows = {} }
+	local searchable, touch = control.Searchable, self._touchTargets
+	local rowHeight = touch and 44 or 30
+	local paged = #control.Options &gt; control.PageSize
+	local top = searchable and (touch and 58 or 46) or 8
+	local pageBar = paged and (touch and 48 or 34) or 0
+	local footer = control.Multi and (touch and 52 or 42) or 8
+	local listHeight = math.max(rowHeight, math.min(#control.Options * (rowHeight+2)+4, touch and 232 or 196, self._rootHeight-top-pageBar-footer-20))
+	local menu = self:_openControlPopup(control, "SearchDropdown", math.min(286,self._rootWidth-16),top+listHeight+pageBar+footer,control.Arrow)
+	local state = {Frame=menu,Rows={},Page=1,Matches={},PageCount=1}
 	control._menu = state
 	if searchable then
-		state.Search = make("TextBox", {
-			Name = "SearchOptions", Text = "", PlaceholderText = "Search options…", ClearTextOnFocus = false,
-			Font = FONT, TextSize = 12, TextXAlignment = Enum.TextXAlignment.Left, BorderSizePixel = 0,
-			Position = UDim2.fromOffset(8, 8), Size = UDim2.new(1, -16, 0, 30), ZIndex = 103,
-		}, menu)
-		self:_skin(state.Search, "BackgroundColor3", "Field"); self:_skin(state.Search, "TextColor3", "Text"); self:_skin(state.Search, "PlaceholderColor3", "Muted")
-		self:_border(state.Search, FIELD_RADIUS); padding(state.Search, 10, 0); self:_focusFeedback(state.Search)
+		state.Search = make("TextBox", {Name="SearchOptions",Text="",PlaceholderText="Search options…",ClearTextOnFocus=false,Font=FONT,TextSize=12,TextXAlignment=Enum.TextXAlignment.Left,BorderSizePixel=0,Position=UDim2.fromOffset(8,8),Size=UDim2.new(1,-16,0,touch and 44 or 30),ZIndex=103},menu)
+		self:_skin(state.Search,"BackgroundColor3","Field");self:_skin(state.Search,"TextColor3","Text");self:_skin(state.Search,"PlaceholderColor3","Muted")
+		self:_border(state.Search,FIELD_RADIUS);padding(state.Search,10,0);self:_focusFeedback(state.Search)
 	end
-	state.List = make("ScrollingFrame", {
-		Name = "Options", BackgroundTransparency = 1, BorderSizePixel = 0, Position = UDim2.fromOffset(8, top),
-		Size = UDim2.new(1, -16, 0, listHeight), AutomaticCanvasSize = Enum.AutomaticSize.Y, CanvasSize = UDim2.new(),
-		ScrollBarThickness = 3, ZIndex = 102,
-	}, menu)
-	list(state.List, 2)
-	state.Empty = self:_text(state.List, "No matching options", 11, false, "Muted")
-	state.Empty.Name, state.Empty.Size, state.Empty.Visible, state.Empty.ZIndex = "Empty", UDim2.new(1, 0, 0, 32), false, 104
-	for index, value in ipairs(control.Options) do
-		local row = button(state.List, value)
-		row.Name, row.Size, row.LayoutOrder, row.ZIndex = "Option_" .. value, UDim2.new(1, -4, 0, 30), index, 103
-		row.TextXAlignment, row.TextTruncate = Enum.TextXAlignment.Left, Enum.TextTruncate.AtEnd
-		padding(row, 10, 0); corner(row, 6)
-		self:_skin(row, "TextColor3", "Text"); self:_skin(row, "BackgroundColor3", "Hover")
-		local check = self:_icon(row, "check", "Accent")
-		check.Position, check.Size = UDim2.new(1, -22, 0, 7), UDim2.fromOffset(16, 16)
-		for _, object in ipairs(check:GetDescendants()) do if object:IsA("GuiObject") then object.ZIndex = 104 end end
-		state.Rows[value] = { Button = row, Check = check }
-		self:_connect(row.Activated, function()
-			if self._popup ~= menu or not control:CanInteract() then return end
-			if control.Multi then
-				local values = control:Get()
-				local found = table.find(values, value)
-				if found then table.remove(values, found) else table.insert(values, value) end
-				control:Set(values)
-			else control:Set(value); self:_closeMenu() end
-		end)
-		self:_connect(row.MouseEnter, function() if self._popup == menu then self:_tween(row, { BackgroundTransparency = 0 }, 0.5) end end)
-		self:_connect(row.MouseLeave, function() if self._popup == menu then control:_render() end end)
+	state.List=make("ScrollingFrame",{Name="Options",BackgroundTransparency=1,BorderSizePixel=0,Position=UDim2.fromOffset(8,top),Size=UDim2.new(1,-16,0,listHeight),AutomaticCanvasSize=Enum.AutomaticSize.Y,CanvasSize=UDim2.new(),ScrollBarThickness=3,ScrollingDirection=Enum.ScrollingDirection.Y,ZIndex=102},menu)
+	list(state.List,2)
+	state.Empty=self:_text(state.List,"No matching options",11,false,"Muted")
+	state.Empty.Name,state.Empty.Size,state.Empty.ZIndex="Empty",UDim2.new(1,0,0,rowHeight),104
+	local rebuild
+	if paged then
+		state.Previous, state.Next = button(menu,"‹"),button(menu,"›")
+		state.PageLabel=self:_text(menu,"",10,false,"Muted")
+		local y=top+listHeight+2
+		state.PageLabel.Position,state.PageLabel.Size,state.PageLabel.ZIndex=UDim2.fromOffset(56,y),UDim2.new(1,-112,0,pageBar-4),103
+		state.PageLabel.TextXAlignment=Enum.TextXAlignment.Center
+		for i,b in ipairs({state.Previous,state.Next}) do
+			b.Name=i==1 and "PreviousPage" or "NextPage"
+			b.Position=i==1 and UDim2.fromOffset(8,y) or UDim2.new(1,-52,0,y)
+			b.Size,b.ZIndex,b.BackgroundTransparency=UDim2.fromOffset(44,pageBar-4),103,0
+			self:_skin(b,"TextColor3","Text");self:_skin(b,"BackgroundColor3","Field");self:_border(b,6);self:_feedback(b)
+			self:_connect(b.Activated,function()
+				if self._popup~=menu then return end
+				state.Page=math.clamp(state.Page+(i==1 and -1 or 1),1,state.PageCount);rebuild()
+			end)
+		end
 	end
 	if control.Multi then
-		state.Count = self:_text(menu, "", 10, false, "Muted")
-		state.Count.Position, state.Count.Size, state.Count.ZIndex = UDim2.new(0, 12, 1, -34), UDim2.fromOffset(104, 26), 103
-		local clear, done = button(menu, "Clear"), button(menu, "Done")
-		clear.Name, done.Name = "ClearSelection", "Done"
-		for _, entry in ipairs({ { clear, -132, 54 }, { done, -72, 64 } }) do
-			local item = entry[1]
-			item.Position, item.Size, item.ZIndex, item.BackgroundTransparency = UDim2.new(1, entry[2], 1, -34), UDim2.fromOffset(entry[3], 26), 103, 0
-			self:_skin(item, "BackgroundColor3", "Field"); self:_skin(item, "TextColor3", "Accent"); self:_border(item, 6); self:_feedback(item)
+		state.Count=self:_text(menu,"",10,false,"Muted")
+		state.Count.Position,state.Count.Size,state.Count.ZIndex=UDim2.new(0,12,1,-footer+4),UDim2.fromOffset(100,footer-10),103
+		local clear,done=button(menu,"Clear"),button(menu,"Done")
+		clear.Name,done.Name="ClearSelection","Done"
+		for _,e in ipairs({{clear,-132,54},{done,-72,64}}) do
+			local b=e[1];b.Position,b.Size,b.ZIndex,b.BackgroundTransparency=UDim2.new(1,e[2],1,-footer+4),UDim2.fromOffset(e[3],footer-10),103,0
+			self:_skin(b,"BackgroundColor3","Field");self:_skin(b,"TextColor3","Text");self:_border(b,6);self:_feedback(b)
 		end
-		self:_connect(clear.Activated, function() if self._popup == menu and control:CanInteract() then control:Set({}) end end)
-		self:_connect(done.Activated, function() if self._popup == menu then self:_closeMenu() end end)
+		self:_connect(clear.Activated,function()if self._popup==menu and control:CanInteract() then control:Set({}) end end)
+		self:_connect(done.Activated,function()if self._popup==menu then self:_closeMenu() end end)
 	end
+	rebuild=function()
+		if self._popup~=menu then return end
+		local selected=GuiService.SelectedObject
+		local refocus=selected and selected:IsDescendantOf(state.List)
+		for _,row in pairs(state.Rows) do row.Button:Destroy() end
+		state.Rows={}
+		state.PageCount=math.max(1,math.ceil(#state.Matches/control.PageSize))
+		state.Page=math.clamp(state.Page,1,state.PageCount)
+		state.Empty.Visible=#state.Matches==0
+		local start=(state.Page-1)*control.PageSize+1
+		local displayed = paged and state.Matches or control.Options
+		for index=start,math.min(#displayed,start+control.PageSize-1) do
+			local value=displayed[index]
+			local row=button(state.List,value)
+			row.Name,row.Size,row.LayoutOrder,row.ZIndex="Option_"..value,UDim2.new(1,-4,0,rowHeight),index,103
+			row.Visible = state.Query=="" or value:lower():find(state.Query,1,true) ~= nil
+			row.TextXAlignment,row.TextTruncate=Enum.TextXAlignment.Left,Enum.TextTruncate.AtEnd
+			padding(row,10,0);row:FindFirstChildOfClass("UIPadding").PaddingRight=UDim.new(0,30);corner(row,6)
+			self:_skin(row,"TextColor3","Text");self:_skin(row,"BackgroundColor3","Hover");self:_feedback(row,{NoScale=true,Radius=6})
+			local check=self:_icon(row,"check","Accent")
+			check.Position,check.Size=UDim2.new(1,-22,0,(rowHeight-16)/2),UDim2.fromOffset(16,16);self:_iconLayer(check,104)
+			state.Rows[value]={Button=row,Check=check}
+			self:_connect(row.Activated,function()
+				if self._popup~=menu or not control:CanInteract() then return end
+				if control.Multi then
+					local values=control:Get();local found=table.find(values,value)
+					if found then table.remove(values,found) else table.insert(values,value) end
+					control:Set(values)
+				else control:Set(value);self:_closeMenu() end
+			end)
+			self:_connect(row.MouseEnter,function()if self._popup==menu then self:_tween(row,{BackgroundTransparency=0},.5) end end)
+			self:_connect(row.MouseLeave,function()if self._popup==menu then control:_render() end end)
+		end
+		if state.PageLabel then
+			state.PageLabel.Text=tostring(state.Page).." / "..tostring(state.PageCount).." · "..tostring(#state.Matches)
+			state.Previous.Interactable,state.Next.Interactable=state.Page&gt;1,state.Page&lt;state.PageCount
+			state.Previous.Selectable,state.Next.Selectable=self.GamepadNavigation and state.Page&gt;1,self.GamepadNavigation and state.Page&lt;state.PageCount
+		end
+		state.List.CanvasPosition=Vector2.zero
+		control:_render();self:_prune()
+		if refocus then self:_chooseFocus(state.List) end
+	end
+	state.RenderPage=rebuild
+	state.SetPage=function(page) state.Page=math.clamp(page,1,state.PageCount);rebuild() end
 	local function filter()
-		local query = state.Search and string.lower(state.Search.Text) or ""
-		local count = 0
-		for value, row in pairs(state.Rows) do
-			row.Button.Visible = query == "" or string.find(string.lower(value), query, 1, true) ~= nil
-			if row.Button.Visible then count += 1 end
-		end
-		state.Empty.Visible = count == 0
-		state.List.CanvasPosition = Vector2.zero
+		state.Matches={}
+		local query=state.Search and state.Search.Text:lower() or ""
+		state.Query=query
+		for _,value in ipairs(control.Options) do if query=="" or value:lower():find(query,1,true) then table.insert(state.Matches,value) end end
+		state.Page=1;rebuild()
 	end
-	if state.Search then self:_connect(state.Search:GetPropertyChangedSignal("Text"), filter) end
-	control:_render(); filter()
-	self:_show(menu, true, true, nil, Vector2.new(0, -6))
+	if state.Search then self:_connect(state.Search:GetPropertyChangedSignal("Text"),filter) end
+	filter();self:_show(menu,true,true,nil,Vector2.new(0,-6))
+	if self._gamepadActive then self:_chooseFocus(state.List) end
 end
 
 function Section:Dropdown(options)
@@ -4210,6 +4354,8 @@ function Section:Dropdown(options)
 	local control, window = self:_row(options, "Dropdown")
 	control.Options = deepCopy(options.Options or {})
 	control.Multi, control.Searchable = options.Multi == true, options.Searchable ~= false
+	control.PageSize = options.PageSize or 50
+	assert(finite(control.PageSize) and control.PageSize % 1 == 0 and control.PageSize &gt;= 10 and control.PageSize &lt;= 100, "PageSize must be an integer from 10 to 100")
 	assert(#control.Options &gt; 0, "Dropdown requires at least one option")
 	local function validateOptions(entries)
 		assert(type(entries) == "table" and #entries &gt; 0, "Options cannot be empty")
@@ -4235,6 +4381,7 @@ function Section:Dropdown(options)
 	control.Field = field
 	field.TextTruncate = Enum.TextTruncate.AtEnd
 	field.TextXAlignment = Enum.TextXAlignment.Left; padding(field, 10, 0)
+	field:FindFirstChildOfClass("UIPadding").PaddingRight = UDim.new(0,30)
 	local arrow = window:_icon(field, "chevron-down")
 	arrow.Position, arrow.Size, arrow.ZIndex = UDim2.new(1, -18, 0, 7), UDim2.fromOffset(14, 14), 12
 	for _, child in ipairs(arrow:GetDescendants()) do if child:IsA("GuiObject") then child.ZIndex = 12 end end
@@ -4340,8 +4487,7 @@ function Window:_colorPopup(control)
 	self:_skin(done, "BackgroundColor3", "Field"); self:_skin(done, "TextColor3", "Accent"); self:_border(done, FIELD_RADIUS); self:_feedback(done)
 	self:_connect(done.Activated, function() if self._popup == menu then self:_closeMenu() end end)
 	local function ratio(object, x, y)
-		local inset = GuiService:GetGuiInset()
-		return math.clamp((x - object.AbsolutePosition.X - inset.X) / math.max(1, object.AbsoluteSize.X), 0, 1), math.clamp((y - object.AbsolutePosition.Y - inset.Y) / math.max(1, object.AbsoluteSize.Y), 0, 1)
+		return math.clamp((x - object.AbsolutePosition.X) / math.max(1, object.AbsoluteSize.X), 0, 1), math.clamp((y - object.AbsolutePosition.Y) / math.max(1, object.AbsoluteSize.Y), 0, 1)
 	end
 	local function updateSV(x, y)
 		if self._popup ~= menu or not control:CanInteract() then return end
@@ -4360,6 +4506,10 @@ function Window:_colorPopup(control)
 		control:SetAlpha(alpha)
 	end
 	state.UpdateSV, state.UpdateHue, state.UpdateAlpha = updateSV, updateHue, updateAlpha
+	for _,object in ipairs({state.SV,state.Hue,state.Alpha}) do self:_focusable(object);object.NextSelectionLeft,object.NextSelectionRight=object,object end
+	self._gamepadAdjust[state.SV] = function(x,y) local color=control:Get();local _,sat,val=color:ToHSV();control:SetHSV(control._hue,math.clamp(sat+x*.02,0,1),math.clamp(val+y*.02,0,1));return true end
+	self._gamepadAdjust[state.Hue] = function(x) if x==0 then return false end;local color=control:Get();local _,sat,val=color:ToHSV();control:SetHSV((control._hue+x*.02)%1,sat,val);return true end
+	self._gamepadAdjust[state.Alpha] = function(x) if x==0 then return false end;local _,alpha=control:Get();control:SetAlpha(math.clamp(alpha+x*.05,0,1));return true end
 	for _, entry in ipairs({ { state.SV, updateSV, "SV" }, { state.Hue, updateHue, "Hue" }, { state.Alpha, updateAlpha, "Alpha" } }) do
 		self:_connect(entry[1].InputBegan, function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -4368,6 +4518,17 @@ function Window:_colorPopup(control)
 				entry[2](input.Position.X, input.Position.Y)
 			end
 		end)
+	end
+	if self._touchTargets then
+		for _,entry in ipairs({{170,updateHue,"HueTouch"},{214,updateAlpha,"AlphaTouch"}}) do
+			local hit=button(menu,"")
+			hit.Name,hit.Position,hit.Size,hit.ZIndex=entry[3],UDim2.fromOffset(12,entry[1]),UDim2.fromOffset(262,44),108
+			self:_connect(hit.InputBegan,function(input)
+				if input.UserInputType==Enum.UserInputType.Touch and self._popup==menu and control:CanInteract() then
+					self._colorDrag={input=input,control=control,update=entry[2],kind=entry[3]};entry[2](input.Position.X,input.Position.Y)
+				end
+			end)
+		end
 	end
 	self:_connect(state.Hex.FocusLost, function()
 		if self._popup ~= menu or not control:CanInteract() then return end
@@ -4715,8 +4876,9 @@ function Window:Confirm(options)
 	local dismiss = button(root, "")
 	dismiss.Size, dismiss.ZIndex, dismiss.BackgroundColor3, dismiss.BackgroundTransparency = UDim2.fromScale(1, 1), 20000, Color3.new(), 0.45
 	local hasEditor = options.Text ~= nil
-	local panel = make("Frame", { Name = "Dialog", Size = UDim2.fromOffset(hasEditor and 480 or 380, hasEditor and 420 or 192), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), BorderSizePixel = 0, Active = true, ZIndex = 20001 }, root)
-	self:_surface(panel, "Card"); self:_border(panel, WINDOW_RADIUS)
+	local dialogWidth,dialogHeight = math.min(hasEditor and 480 or 380,self._rootWidth-16), math.min(hasEditor and 420 or 192,self._rootHeight-16)
+	local panel = make("Frame", { Name = "Dialog", Size = UDim2.fromOffset(dialogWidth,dialogHeight), AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), BorderSizePixel = 0, Active = true, ZIndex = 20001 }, root)
+	self:_surface(panel, "Card"); self:_border(panel, WINDOW_RADIUS); self:_selectionGroup(panel)
 	local title = self:_text(panel, options.Title or "Are you sure?", 17, true)
 	title.Position, title.Size, title.ZIndex = UDim2.fromOffset(22, 22), UDim2.new(1, -44, 0, 25), 20002
 	local description = self:_text(panel, options.Description or "", 12, false, "Muted")
@@ -4729,18 +4891,22 @@ function Window:Confirm(options)
 		local scroll = make("ScrollingFrame", {Name="EditorScroll",Position=UDim2.fromOffset(22,100),Size=UDim2.new(1,-44,0,236),CanvasSize=UDim2.new(),AutomaticCanvasSize=Enum.AutomaticSize.Y,ScrollingDirection=Enum.ScrollingDirection.Y,ScrollBarThickness=3,BorderSizePixel=0,ZIndex=20002},panel)
 		self:_skin(scroll,"BackgroundColor3","Field");self:_border(scroll,FIELD_RADIUS)
 		editor = make("TextBox",{Name="Editor",Text=options.Text,MultiLine=true,ClearTextOnFocus=false,TextEditable=options.ReadOnly~=true,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,Font=Enum.Font.Code,TextSize=11,BackgroundTransparency=1,Position=UDim2.fromOffset(8,8),Size=UDim2.new(1,-20,0,220),AutomaticSize=Enum.AutomaticSize.Y,ZIndex=20003},scroll)
-		self:_skin(editor,"TextColor3","Text")
+		self:_skin(editor,"TextColor3","Text");self:_focusable(editor)
+		scroll.Size = UDim2.new(1,-44,1,-184)
+		editor.Size = UDim2.new(1,-20,0,math.max(44,dialogHeight-200))
 		validationLabel = self:_text(panel,"",10,false,"Muted")
 		validationLabel.Position,validationLabel.Size,validationLabel.ZIndex=UDim2.fromOffset(22,340),UDim2.new(1,-44,0,30),20002
-		validationLabel.TextWrapped=true
+		validationLabel.TextWrapped=true;validationLabel.Position=UDim2.new(0,22,1,-80)
 	end
 	local cancel, accept = button(panel, "Cancel"), button(panel, options.ConfirmText or "Confirm")
 	cancel.Name, accept.Name = "Cancel", "Confirm"
-	cancel.Position, accept.Position = UDim2.fromOffset(22, hasEditor and 372 or 140), UDim2.new(1, -181, 0, hasEditor and 372 or 140)
-	for _, item in ipairs({cancel, accept}) do item.Size, item.ZIndex, item.BackgroundTransparency = UDim2.fromOffset(159, 30), 20003, 0; self:_border(item, FIELD_RADIUS); self:_feedback(item) end
+	local buttonWidth = (dialogWidth-56)/2
+	cancel.Position, accept.Position = UDim2.new(0,22,1,-48), UDim2.new(1,-22-buttonWidth,1,-48)
+	for _, item in ipairs({cancel, accept}) do item.Size, item.ZIndex, item.BackgroundTransparency = UDim2.fromOffset(buttonWidth,self._touchTargets and 40 or 30), 20003, 0; self:_border(item, FIELD_RADIUS); self:_feedback(item) end
 	self:_skin(cancel, "BackgroundColor3", "Field"); self:_skin(cancel, "TextColor3", "Text")
 	self:_skin(accept, "BackgroundColor3", "Accent"); accept.TextColor3 = Color3.new(1, 1, 1)
 	local window, connections = self, {}
+	local previousSelection = GuiService.SelectedObject
 	local handle = { Root = root, Pending = true, Editor = editor, ErrorLabel = validationLabel }
 	local function finish(confirmed)
 		if not handle.Pending then return end
@@ -4750,6 +4916,7 @@ function Window:Confirm(options)
 		end
 		handle.Pending = false
 		if window._confirmation == handle then window._confirmation = nil end
+		window:_restoreSelection(previousSelection)
 		for _, connection in ipairs(connections) do connection:Disconnect() end
 		window:_show(root, false, false, function() root:Destroy(); window:_prune() end, Vector2.zero)
 		if confirmed then window:_callback(options.OnConfirm, editor and editor.Text) else window:_callback(options.OnCancel) end
@@ -4759,6 +4926,7 @@ function Window:Confirm(options)
 	connections = { self:_connect(cancel.Activated, function() finish(false) end), self:_connect(dismiss.Activated, function() finish(false) end), self:_connect(accept.Activated, function() finish(true) end) }
 	self._confirmation = handle
 	self:_show(root, true, true, nil, Vector2.zero)
+	if self._gamepadActive then GuiService.SelectedObject = cancel end
 	return handle
 end
 
@@ -5119,6 +5287,8 @@ end
 function Window:Destroy()
 	if self.Destroyed or self._destroying then return end
 	self._destroying = true
+	self:_cancelInteractions()
+	if self:_ownsFocus(GuiService.SelectedObject) then GuiService.SelectedObject = nil end
 	if self._persistence and self._persistence.AutoSave and not self._persistence.Busy then self:SaveSettings() end
 	self:DisablePersistence(false)
 	if self._confirmation then self._confirmation:Cancel() end
@@ -5135,6 +5305,272 @@ function Window:Destroy()
 	self.DockGui:Destroy()
 	for _, control in ipairs(self.Controls) do control.Destroyed = true; control._ownedConnections = {} end
 	self._skins, self._surfaces, self._refresh, self._configListeners = {}, {}, {}, {}
+	self._focusables, self._focusControls, self._gamepadAdjust = {}, {}, {}
+	if navigationWindow == self then navigationWindow = nil end
+end
+
+-- Shared presentation helpers used by every control type.
+function Control:_positionIcon(apply)
+	local old = self._iconIndent or 0
+	if old ~= 0 then
+		for _,text in ipairs({self.LabelText, self.DescriptionText}) do
+			text.Position -= UDim2.fromOffset(old, 0)
+			text.Size += UDim2.fromOffset(old, 0)
+		end
+	end
+	self._iconIndent = 0
+	if apply and self.Icon then
+		self.Icon.Position = UDim2.fromOffset(0, self.LabelText.Position.Y.Offset + math.max(0, (self.LabelText.Size.Y.Offset - 18) / 2))
+		for _,text in ipairs({self.LabelText, self.DescriptionText}) do
+			text.Position += UDim2.fromOffset(26, 0)
+			text.Size -= UDim2.fromOffset(26, 0)
+		end
+		self._iconIndent = 26
+	end
+end
+
+function Control:SetIcon(name)
+	assert(not self.Destroyed, "Control has been destroyed")
+	assert(name == nil or type(name) == "string", "Icon must be a name or nil")
+	self:_positionIcon(false)
+	self.Window:_settleAncestors(self.Row)
+	if self.Icon then self.Icon:Destroy(); self.Icon = nil end
+	if name then
+		self.Icon = self.Window:_icon(self.Row, name, "Muted")
+		self.Icon.Size = UDim2.fromOffset(18, 18)
+		self.Window:_iconLayer(self.Icon, self.LabelText.ZIndex)
+		local base = self.LabelText:GetAttribute("PearlDockZ")
+		if base then
+			self.Icon:SetAttribute("PearlDockZ",base)
+			for _,item in ipairs(self.Icon:GetDescendants()) do if item:IsA("GuiObject") then item:SetAttribute("PearlDockZ",base) end end
+		end
+	end
+	self:_positionIcon(true)
+	self.Window:_prune()
+	return self
+end
+
+function Window:_iconLayer(icon, z)
+	icon.ZIndex = z
+	for _,object in ipairs(icon:GetDescendants()) do if object:IsA("GuiObject") then object.ZIndex = z end end
+end
+
+function Tab:SetIcon(name)
+	assert(not self.Window.Destroyed and type(name) == "string", "Icon must be a name")
+	local old = self.Icon
+	self.Icon = self.Window:_icon(self.Button, name, self.Window.ActiveTab == self and "Accent" or "Muted")
+	self.Icon.Position, self.Icon.Size = old.Position, old.Size
+	self.Window:_iconLayer(self.Icon, old.ZIndex)
+	old:Destroy()
+	local dock = self.DockButton:FindFirstChild("Icon")
+	local icon = self.Window:_icon(self.DockButton, name, "Text")
+	icon.Position, icon.Size = dock.Position, dock.Size
+	self.Window:_iconLayer(icon, dock.ZIndex)
+	dock:Destroy(); self.Window:_prune()
+	return self
+end
+
+function Section:SetIcon(name)
+	assert(not self.Window.Destroyed and (name == nil or type(name) == "string"), "Icon must be a name or nil")
+	local old = self.Icon
+	self.Icon = self.Window:_icon(self.Header, name or "grip-vertical", "Muted")
+	self.Icon.Position, self.Icon.Size = old.Position, old.Size
+	self.Window:_iconLayer(self.Icon, old.ZIndex)
+	local base=old:GetAttribute("PearlDockZ")
+	if base then
+		self.Icon:SetAttribute("PearlDockZ",base)
+		for _,item in ipairs(self.Icon:GetDescendants()) do if item:IsA("GuiObject") then item:SetAttribute("PearlDockZ",base) end end
+	end
+	old:Destroy(); self.Window:_prune()
+	return self
+end
+
+
+function Window:_ownsFocus(object)
+	return object and self.Gui and (object:IsDescendantOf(self.Gui) or object:IsDescendantOf(self.DockGui)) or false
+end
+
+function Window:_focusVisible(object)
+	if not object or not object.Parent or not object.Selectable or not object.Interactable then return false end
+	local parent = object
+	while parent do
+		if parent:IsA("GuiObject") and not parent.Visible then return false end
+		if parent:IsA("ScreenGui") then return parent.Enabled end
+		parent = parent.Parent
+	end
+	return false
+end
+
+function Window:_scrollTo(object)
+	local parent = object.Parent
+	while parent and parent ~= self.Root and parent ~= self.DockRoot do
+		if parent:IsA("ScrollingFrame") and parent.ScrollingDirection ~= Enum.ScrollingDirection.X then
+			local popupFit=self._popup and object:IsDescendantOf(self._popup) and self._popup:FindFirstChild("PopupFit")
+			local scale = (self._actualScale or 1)*(popupFit and popupFit.Scale or 1)
+			local top = (object.AbsolutePosition.Y - parent.AbsolutePosition.Y) / scale
+			local bottom = top + object.AbsoluteSize.Y / scale
+			local height = parent.AbsoluteSize.Y / scale
+			if Input.OnScreenKeyboardVisible then
+				local inset=GuiService:GetGuiInset()
+				height=math.min(height,math.max(1,(Input.OnScreenKeyboardPosition.Y-inset.Y-parent.AbsolutePosition.Y)/scale))
+			end
+			local delta = top &lt; 4 and top - 4 or (bottom &gt; height - 4 and bottom - height + 4 or 0)
+			local limit = math.max(0, (parent.AbsoluteCanvasSize.Y - parent.AbsoluteSize.Y) / scale)
+			if delta ~= 0 then parent.CanvasPosition = Vector2.new(parent.CanvasPosition.X, math.clamp(parent.CanvasPosition.Y + delta, 0, limit)) end
+		end
+		parent = parent.Parent
+	end
+end
+
+function Window:_focusable(object)
+	if not self.GamepadNavigation or not (object:IsA("GuiButton") or object:IsA("TextBox")) or self._focusables[object] then return end
+	self._focusables[object] = true
+	object.Selectable = true
+	object.SelectionOrder = self._nextSelectionOrder
+	self._nextSelectionOrder += 1
+	local ring = make("Frame", {Name = "FocusRing", BackgroundTransparency = 1, Size = UDim2.fromScale(1,1), BorderSizePixel = 0, Visible = false, ZIndex = object.ZIndex + 3}, object)
+	corner(ring, FIELD_RADIUS)
+	self:_skin(make("UIStroke", {Thickness = 2, Transparency = 0}, ring), "Color", "Text")
+	self:_connect(object.SelectionGained, function() ring.Visible = true; navigationWindow = self; self._gamepadActive = true; self:_scrollTo(object) end)
+	self:_connect(object.SelectionLost, function() ring.Visible = false end)
+	if object:IsA("GuiButton") then self:_connect(object.Activated, function() navigationWindow = self end) end
+end
+
+function Window:_chooseFocus(root)
+	local best
+	for object in pairs(self._focusables) do
+		if object:IsDescendantOf(root) and self:_focusVisible(object) and (not best or object.SelectionOrder &lt; best.SelectionOrder) then best = object end
+	end
+	if best then self:_scrollTo(best); GuiService.SelectedObject = best end
+	return best ~= nil
+end
+
+function Window:Focus(target)
+	assert(not self.Destroyed, "Window has been destroyed")
+	if not self.GamepadNavigation then return false, "Gamepad navigation is disabled" end
+	if not self.Visible or self.Minimized then self:SetVisible(true); self:SetMinimized(false) end
+	navigationWindow, self._gamepadActive = self, true
+	if type(target) == "table" and target.Row then
+		if not target._focusTarget then return false,"Control is not selectable" end
+		target = target._focusTarget
+	end
+	if target ~= nil then
+		if typeof(target) ~= "Instance" or not self:_ownsFocus(target) or not self:_focusVisible(target) then return false, "Target is unavailable" end
+		self:_scrollTo(target); GuiService.SelectedObject = target; return true
+	end
+	local root = self._confirmation and self._confirmation.Root or self._popup or (self.ActiveTab and self.ActiveTab.Page) or self.Main
+	return self:_chooseFocus(root) or self:_chooseFocus(self.Main)
+end
+
+function Window:_gamepadInput(input, processed)
+	if not self.GamepadNavigation or not input.UserInputType.Name:match("^Gamepad") then return false end
+	local selected = GuiService.SelectedObject
+	local owned = self:_ownsFocus(selected)
+	if input.KeyCode == Enum.KeyCode.ButtonSelect and not processed and (owned or (not selected and navigationWindow == self)) then self:Focus(); return true end
+	if not owned then return false end
+	self._gamepadActive = true
+	if input.KeyCode == Enum.KeyCode.ButtonB then
+		if self._capturing then self:_cancelInteractions()
+		elseif self._confirmation then self._confirmation:Cancel()
+		elseif self._popup then self:_closeMenu()
+		else self:SetVisible(false) end
+		return true
+	end
+	if self._capturing then return false end
+	if input.KeyCode == Enum.KeyCode.ButtonL1 or input.KeyCode == Enum.KeyCode.ButtonR1 then
+		if self._confirmation or #self.Tabs == 0 then return true end
+		local index = table.find(self.Tabs, self.ActiveTab) or 1
+		index = ((index - 1 + (input.KeyCode == Enum.KeyCode.ButtonR1 and 1 or -1)) % #self.Tabs) + 1
+		self.Search.Text = ""; self:SelectTab(self.Tabs[index]); self:Focus(); return true
+	end
+	local adjust = self._gamepadAdjust[selected]
+	if adjust then
+		local x = input.KeyCode == Enum.KeyCode.DPadLeft and -1 or input.KeyCode == Enum.KeyCode.DPadRight and 1 or 0
+		local y = input.KeyCode == Enum.KeyCode.DPadUp and 1 or input.KeyCode == Enum.KeyCode.DPadDown and -1 or 0
+		if x ~= 0 or y ~= 0 then return adjust(x, y)==true end
+	end
+	return false
+end
+
+function Window:_selectionGroup(root)
+	root.SelectionGroup = true
+	for _,direction in ipairs({"Up", "Down", "Left", "Right"}) do root["SelectionBehavior" .. direction] = Enum.SelectionBehavior.Stop end
+end
+
+function Window:_restoreSelection(previous)
+	if not self._gamepadActive or self.Destroyed then return end
+	if previous and self:_focusVisible(previous) then GuiService.SelectedObject = previous
+	elseif self.Visible and not self.Minimized then self:_chooseFocus(self.ActiveTab and self.ActiveTab.Page or self.Main)
+	else self:_chooseFocus(self.DockHandle.Visible and self.DockHandle.Parent or self.Dock) end
+end
+
+function Window:_touchScrollLock(control)
+	local scroll, enabled = control.Row.Parent, nil
+	while scroll and not scroll:IsA("ScrollingFrame") do scroll = scroll.Parent end
+	if scroll then enabled = scroll.ScrollingEnabled; scroll.ScrollingEnabled = false end
+	return function() if scroll and scroll.Parent then scroll.ScrollingEnabled = enabled end end
+end
+
+function Window:_responsiveChrome(mobile)
+	local sidebar = mobile and 56 or 180
+	self.Sidebar.Size = UDim2.new(0, sidebar, 1, -48)
+	self.Content.Position, self.Content.Size = UDim2.fromOffset(sidebar,48), UDim2.new(1,-sidebar,1,-48)
+	self._sideLabel.Visible, self.Footer.Visible, self.UserCard.Visible = not mobile, not mobile, not mobile
+	self._titleLabel.Visible, self._dragArea.Visible = not mobile, not mobile
+	self.Search.Position, self.Search.Size = UDim2.new(1,mobile and -156 or -207,0,mobile and 3 or 10), UDim2.fromOffset(mobile and 148 or 192,mobile and 42 or 28)
+	self._searchIcon.Position = UDim2.new(1,mobile and -148 or -198,0,17)
+	self.Navigation.Position = UDim2.fromOffset(mobile and 4 or 10,mobile and 8 or 54)
+	self.Navigation.Size = UDim2.new(1,mobile and -8 or -20,1,mobile and -16 or -164)
+	self.Heading.TextSize = mobile and 22 or 28
+	self.Heading.Position, self.Heading.Size = UDim2.fromOffset(mobile and 12 or 28,mobile and 10 or 25), UDim2.new(1,mobile and -24 or -56,0,36)
+	self.Description.Position, self.Description.Size = UDim2.fromOffset(mobile and 12 or 29,mobile and 47 or 65), UDim2.new(1,mobile and -24 or -58,0,22)
+	self.Pages.Position, self.Pages.Size = UDim2.fromOffset(mobile and 10 or 28,mobile and 76 or 106), UDim2.new(1,mobile and -18 or -50,1,mobile and -86 or -136)
+	for index,dot in ipairs(self._chromeButtons) do
+		dot.Size, dot.Position = UDim2.fromOffset(12,12), UDim2.fromOffset(mobile and (24 + (index-1)*44) or (19+(index-1)*21),18)
+		dot.Selectable = self.GamepadNavigation and not mobile
+		local hit=self._chromeTouchButtons[index]
+		hit.Position,hit.Visible,hit.Selectable = UDim2.fromOffset(8+(index-1)*44,2),mobile,self.GamepadNavigation and mobile
+	end
+	for _,tab in ipairs(self.Tabs) do
+		tab.Label.Visible = not mobile
+		tab.Button.Size = UDim2.new(1,0,0,mobile and 48 or 39)
+		tab.Icon.Position = UDim2.fromOffset(mobile and 14 or 12,mobile and 14 or 9)
+	end
+	for _,section in ipairs(self.Sections) do
+		local touch=self._touchTargets
+		section.Header.Size=UDim2.new(1,0,0,touch and 48 or 42)
+		local detach=section.Header.Detach
+		detach.Position,detach.Size=UDim2.new(1,touch and -48 or -38,0,touch and 2 or 7),UDim2.fromOffset(touch and 44 or 28,touch and 44 or 28)
+		detach.Icon.Position=UDim2.fromOffset(touch and 12 or 4,touch and 12 or 4)
+		if section.Float and mobile then section.Float.Size=UDim2.fromOffset(math.min(410,self._rootWidth-16),math.min(section.Float.Size.Y.Offset,self._rootHeight-16)) end
+	end
+	self.Notifications.Position = UDim2.new(1,mobile and -8 or -24,1,mobile and -8 or -24)
+	self.Notifications.Size = UDim2.fromOffset(math.min(310,self._rootWidth-16),300)
+end
+
+function Window:Ready(options)
+	assert(not self.Destroyed, "Window has been destroyed")
+	options = options or {}
+	assert(type(options) == "table", "Ready options must be a table")
+	if self._ready then
+		local status, message = self:GetPersistenceStatus()
+		return status ~= "Error", message or status
+	end
+	if not self._defaults then self:CaptureDefaults() end
+	if options.DefaultConfig ~= false then
+		local name = options.DefaultConfig or "Default"
+		if not self._profiles[name] then local ok, err = self:CreateConfig(name); if not ok then return false, err end end
+	end
+	if options.Adapter then
+		local ok, result = self:ConfigurePersistence({Adapter = options.Adapter, Key = options.Key or "settings", Load = options.Load,
+			AutoSave = options.AutoSave, Debounce = options.Debounce, OnStatus = options.OnStatus})
+		if not ok then return false, result end
+		self._ready = true
+		return true, self:GetPersistenceStatus()
+	end
+	self._ready = true
+	if self._persistence then return true,self:GetPersistenceStatus() end
+	return true, "Session only"
 end
 
 for _, name in ipairs({ "Toggle", "Slider", "Dropdown", "ColorPicker", "Input", "Keybind", "Button", "Label" }) do
@@ -5263,6 +5699,7 @@ return function(PearlUI, window)
 		table.insert(names,name)
 		bench.Factories[name]=function()
 			local options=table.clone(settings);options.Label=name;options.Id="lab.control."..name;options.Persist=false
+			options.Icon=({Toggle="power",Slider="sliders-horizontal",Dropdown="list",ColorPicker="palette",Input="text-cursor-input",Keybind="keyboard",Button="play",Label="info"})[kind]
 			options.Callback=function(value,alpha)changed(name,value,alpha)end
 			local control=showcase[kind](showcase,options);bench.Controls[name]=control;return control
 		end
@@ -5282,6 +5719,7 @@ return function(PearlUI, window)
 		c:Set(value,silent);return c:Get()
 	end
 	menu(controlActions,"Control API",{
+		{"Change control icon","Control.SetIcon",function()local c=current();c:SetIcon(c.Icon and nil or "star");return c.Icon and "star" or "No icon" end},
 		{"Read value","Control.Get",function()return current():Get()end},
 		{"Serialize value","Control.Serialize",function()return current():Serialize()end},
 		{"Set sample value","Control.Set",function()return setExample(false)end},
@@ -5337,6 +5775,7 @@ return function(PearlUI, window)
 	end})
 	register("Window.SetSize","Window lab / Window size")
 	menu(geometry,"Window actions",{
+		{"Focus with gamepad","Window.Focus",function()return window:Focus()end},
 		{"Hide for two seconds","Window.SetVisible",function()window:SetVisible(false);window:_later(2,function()window:SetVisible(true)end);return "Returns in two seconds"end},
 		{"Minimize to dock","Window.SetMinimized",function()window:SetMinimized(true);return "Use Open Pearl UI on the dock"end},
 		{"Maximize / restore","Window.SetMaximized",function()window:SetMaximized(not window.Maximized);return window.Maximized end},
@@ -5348,6 +5787,8 @@ return function(PearlUI, window)
 	for _,s in ipairs(window.Sections)do local name=s.Tab.Name.." / "..s.Title;table.insert(sectionNames,name);sections[name]=s end
 	local selectedPanel=panels:Dropdown({Id="lab.panel",Persist=false,Label="Target panel",Options=sectionNames})
 	menu(panels,"Panel actions",{
+		{"Change section icon","Section.SetIcon",function()sections[selectedPanel:Get()]:SetIcon("sparkles");return "sparkles"end},
+		{"Change tab icon","Tab.SetIcon",function()sections[selectedPanel:Get()].Tab:SetIcon("star");return "star"end},
 		{"Detach selected","Section.Detach",function()sections[selectedPanel:Get()]:Detach();return selectedPanel:Get()end},
 		{"Reveal selected","Section.Reveal",function()sections[selectedPanel:Get()]:Reveal();return selectedPanel:Get()end},
 		{"Dock selected","Section.Dock",function()sections[selectedPanel:Get()]:Dock();return selectedPanel:Get()end},
@@ -5383,6 +5824,7 @@ return function(PearlUI, window)
 		{"Request sample reset","Window.RequestReset",function()sampleWindow():RequestReset("All");return "Confirm or cancel in the sample"end},
 	})
 	menu(sandboxActions,"Storage adapter",{
+		{"Initialize sample defaults","Window.Ready",function()local ok,e=sampleWindow():Ready({DefaultConfig=false});assert(ok,e);return e end},
 		{"Connect memory storage","Window.ConfigurePersistence",function()local w=sampleWindow();memory=memory or {};local adapter={Load=function(k)return memory[k]end,Save=function(k,v)memory[k]=v;return true end};local ok,e=w:ConfigurePersistence({Adapter=adapter,Key="sample",AutoSave=false});assert(ok,e);return w:GetPersistenceStatus()end},
 		{"Save sample settings","Window.SaveSettings",function()local ok,e=sampleWindow():SaveSettings();assert(ok,e);return "Sample settings saved"end},
 		{"Reload sample settings","Window.LoadSettings",function()local ok,e=sampleWindow():LoadSettings();assert(ok,e);return "Sample settings restored"end},
@@ -5705,14 +6147,12 @@ if showcaseModule then window._testBench = require(showcaseModule)(PearlUI, wind
 
 window:SelectTab(general)
 defaultLayout = window:ExportLayout()
-window:SaveProfile("Default")
-window:CaptureDefaults()
+local ready, readyStatus = window:Ready({ Adapter = persistenceAdapter, Key = "demo", Debounce = 1.5, OnStatus = function(status)
+	storageStatus:Set(status == "Error" and "Save unavailable — retry" or status)
+end })
+if not persistenceAdapter then storageStatus:Set("Session only") end
+if not ready then storageStatus:Set("Storage unavailable");warn(readyStatus) end
 refresh()
-if persistenceAdapter then
-	window:ConfigurePersistence({ Adapter = persistenceAdapter, Key = "demo", Debounce = 1.5, OnStatus = function(status)
-		storageStatus:Set(status == "Error" and "Save unavailable — retry" or status)
-	end })
-end
 
 if window._testBench then window._testBench.Sync() end
 

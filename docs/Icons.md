@@ -41,13 +41,15 @@ end
 category. [aliases.json](../assets/lucide/aliases.json) records upstream aliases.
 Legacy PearlUI names general, appearance, controls, profiles and detach remain
 compatible. An explicit tab Icon applies to both its sidebar and dock icon.
-Icon support here is the existing tab Icon option; it does not invent an Icon
-option for every control type.
+All eight control types and section headers accept Icon. `control:SetIcon(name)`,
+`tab:SetIcon(name)` and `section:SetIcon(name)` update presentation without changing
+IDs or values. `control:SetIcon(nil)` removes a control icon; section nil restores
+the default grip. Tab SetIcon changes both sidebar and dock together.
 
 Geometry is stored as compact strings and decoded/cached only when an icon is
 used. Only requested icons create native Roblox strokes. Do not render the entire
-catalog or create thousands of dropdown rows at once; filter/paginate large
-pickers (for example, 50 results per page). Curves/ellipses are approximated by
+catalog at once. Dropdowns now search all options and render a bounded page
+(default PageSize=50, configurable from 10 to 100). Curves/ellipses are approximated by
 short line segments; circles and equal-radius rounded rectangles use native
 UIStroke shapes. Rendering preserves the existing theme bindings and Z layers.
 

@@ -8,7 +8,7 @@ description: "Build, integrate, configure, or debug the PearlUI Roblox Luau UI l
 Use the existing PearlUI implementation rather than inventing a different UI
 framework. The public repository is https://github.com/emperhub/PearlUi.
 The library is client-side Luau; server persistence and optional local-file
-storage are separate adapters. This skill describes version 0.8.0. In a newer
+storage are separate adapters. This skill describes version 1.0.0. In a newer
 checkout, inspect the implementation and current docs before relying on a
 version-specific detail.
 
@@ -19,8 +19,9 @@ version-specific detail.
   machine-readable [defaults catalog](references/defaults.json).
 - Choosing icons: [complete Lucide pack](references/icons.md). Tab Icon accepts
   all 2,029 canonical names and upstream aliases; PearlUI.Icons lists names.
+  All eight control types and sections also accept Icon; use SetIcon to replace it.
 - Integrating into Studio, a local preview or an existing project:
-  [integration](references/integration.md).
+  [getting started](references/getting-started.md) and [integration](references/integration.md).
 - Configs, JSON transfers, auto-load or durable storage:
   [configs](references/configs.md) and [persistence](references/persistence.md).
 - Fixing rendering, event, lifecycle or layout bugs:
@@ -44,7 +45,10 @@ this skill remains useful when installed without a full repository checkout.
    intentionally uses `game_<game.GameId>` for per-game data. Forest is an
    available dark-green theme, not the library's implicit default. Respect a
    caller's explicitly chosen scope/theme instead of silently changing it.
-4. Construct the full UI, call `CaptureDefaults()`, then configure persistence.
+4. Construct the full UI, then call `Ready({Adapter = adapter, Key = "settings"})`
+   to capture defaults, create a default config and connect persistence. Without
+   an adapter Ready explicitly returns Session only. The lower-level alternative
+   is `CaptureDefaults()` followed by `ConfigurePersistence()`.
    Persisted startup state or auto-load may override these initial values.
    A named config is updated by Save changes; auto-save preserves the current
    working setup and list without silently replacing that named snapshot.
@@ -81,6 +85,22 @@ this skill remains useful when installed without a full repository checkout.
 - The standalone preview can use optional file APIs; the core module has no
   executor dependency. Studio DataStore access requires the separate server
   integration in the caller's game. Do not contact an unrelated game's remotes.
+
+## Input and responsive behavior
+
+Responsive and GamepadNavigation default to true. Below 640px width (or touch
+landscape below 500px height), use the mobile fill layout and compact 56px rail;
+do not shrink desktop text to phone size. Preserve the desktop WindowSize for
+restoration. Do not bypass control input ownership: another finger must not move
+or release a slider. Touch targets are larger than their decorative switch/dot.
+
+Call Focus(control) or use the controller Select button to enter the UI. A activates,
+B backs out, shoulders change tabs, and D-pad left/right adjusts sliders and color
+channels. Only consume gamepad shortcuts while this window owns selection; do not
+change global Roblox navigation settings. Respect OS reduced motion as well as
+the app toggle. Dropdown PageSize defaults 50; keep filtering over the full data
+set while building only the current page. Do not replace this with thousands of
+live option buttons.
 
 ## Validation and reporting
 

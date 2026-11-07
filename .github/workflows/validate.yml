@@ -1,0 +1,25 @@
+name: Validate PearlUI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: pearl-validation-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the exact public commit
+        env:
+          PEARL_REPOSITORY: ${{ github.repository }}
+          PEARL_REVISION: ${{ github.sha }}
+        run: |
+          git init .
+          git remote add origin "https://github.com/${PEARL_REPOSITORY}.git"
+          git fetch --depth=1 origin "${PEARL_REVISION}"
+          git -c advice.detachedHead=false checkout FETCH_HEAD
+      - name: Rebuild, verify generated files and compile Luau
+        run: python3 tools/check.py --download-compiler --verify-generated
