@@ -1,5 +1,11 @@
 # Changelog
 
+## Maintenance — 2026-11-07
+
+- Fixed long application titles overflowing the Dock restore button: one-line ellipsis, 10px inner padding and clipping keep text inside the 142px button.
+- Dock restore text and navigation icons now use the readable Text role, including dark themes and custom accents.
+- Revalidated the 16-check Dock suite and visually checked a long-title, seven-tab Forest dock. Existing bot state and settings are preserved by the live repair.
+
 ## 0.8.0 — 2026-11-07
 
 - Expanded the demo to 7 tabs, 14 sections and 102 initial controls with Components, Window lab and API tools.

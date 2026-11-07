@@ -1,11 +1,14 @@
 {
   "date": "2026-11-07",
   "libraryVersion": "0.8.0",
-  "scope": "GitHub packaging, defaults and reusable skill; no runtime code change",
+  "scope": "Dock title containment and readable foreground; public API and config schema unchanged",
   "skillValidation": "Skill is valid!",
   "compiledLuauFiles": 24,
   "metadata": "PASS: 76 APIs, 9 palettes, default/source consistency and reference links",
   "build": "PASS: five-source XML and standalone artifacts rebuilt",
   "privacy": "Allowlist excludes local captures, actual settings and caches; published text scanned for local identifiers",
-  "runtimeSuitesRerun": false
+  "runtimeSuitesRerun": [
+    "Dock.spec.luau"
+  ],
+  "historicalCoreSuitesRerun": false
 }

@@ -37,6 +37,11 @@ pointer coordinates into logical offsets; stow/reveal uses dock coordinates. The
 dock starts top-center at y=0 and retains dragged height when stowed left/right.
 The recovery handle must remain reachable after viewport changes.
 
+Dock restore titles use a single clipped line with end ellipsis and 10px inner
+padding inside the fixed 142px button. Never let long app titles resize over the
+navigation viewport. Restore text and dock icons bind to Text rather than Accent,
+so a dark custom accent cannot make the controls unreadable.
+
 Only one owned popup, key capture or drag should hold its input interaction.
 Hiding, disabling, destroying and switching tabs cancel owned interactions and
 release focus. Typing must not trigger keybind actions. Touch and mouse paths need
