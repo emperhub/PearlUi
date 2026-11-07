@@ -3075,6 +3075,20 @@ function Window:_raisePanel(section)
 			end
 		end
 	end
+	if self._popup then self:_liftPopup(self._popup) end
+end
+
+function Window:_liftPopup(menu)
+	local base=math.max(10000,#(self._panelStack or {})*64+100)
+	self.MenuDismiss.ZIndex=base
+	local objects=menu:GetDescendants();table.insert(objects,menu)
+	for _,object in ipairs(objects) do
+		if object:IsA("GuiObject") then
+			local relative=object:GetAttribute("PearlPopupZ") or math.max(1,object.ZIndex-100)
+			object:SetAttribute("PearlPopupZ",relative)
+			object.ZIndex=base+relative
+		end
+	end
 end
 
 function Window:_cancelInteractions()
@@ -3150,6 +3164,7 @@ function Window:_popupMenu(anchor, entries, chosen, onSelect, arrow)
 		self:_connect(item.MouseLeave, function() if self._popup == menu then self:_tween(item, { BackgroundTransparency = value == chosen and 0 or 1 }, 0.55) end end)
 		self:_connect(item.Activated, function() if self._popup == menu then self:_closeMenu(); onSelect(value) end end)
 	end
+	self:_liftPopup(menu)
 	self:_show(menu, true, true, nil, Vector2.new(0, -6))
 end
 
@@ -4019,7 +4034,7 @@ function Section:Detach()
 		padding(self.FloatScroll, 2, 2)
 		local dock = button(surface, "Dock panel")
 		dock.Position, dock.Size, dock.ZIndex, dock.BackgroundTransparency = UDim2.new(0, 14, 1, -43), UDim2.new(1, -28, 0, 30), 44, 0
-		window:_skin(dock, "BackgroundColor3", "Field"); window:_skin(dock, "TextColor3", "Accent"); window:_border(dock, 7)
+		window:_skin(dock, "BackgroundColor3", "Field"); window:_skin(dock, "TextColor3", "Text"); window:_border(dock, 7)
 		window:_feedback(dock)
 		window:_connect(dock.Activated, function() self:Dock() end)
 	end
@@ -4217,6 +4232,7 @@ function Window:_openControlPopup(control, name, width, height, arrow)
 		Size = UDim2.fromOffset(width, height), BorderSizePixel = 0, ZIndex = 101,
 	}, self.Root)
 	if popupScale < 1 then make("UIScale",{Name="PopupFit",Scale=popupScale},popup) end
+	popup.Active=true
 	self:_surface(popup, "Card"); self:_border(popup, 11); self:_selectionGroup(popup)
 	self._popup, self._popupAnchor, self._popupArrow, self._popupOwner = popup, anchor, arrow, control
 	if arrow then self:_tween(arrow, { Rotation = 180 }, 0.7) end
@@ -4322,6 +4338,7 @@ function Window:_dropdownPopup(control)
 		end
 		state.List.CanvasPosition=Vector2.zero
 		control:_render();self:_prune()
+		self:_liftPopup(menu)
 		if refocus then self:_chooseFocus(state.List) end
 	end
 	state.RenderPage=rebuild
@@ -4334,7 +4351,7 @@ function Window:_dropdownPopup(control)
 		state.Page=1;rebuild()
 	end
 	if state.Search then self:_connect(state.Search:GetPropertyChangedSignal("Text"),filter) end
-	filter();self:_show(menu,true,true,nil,Vector2.new(0,-6))
+	filter();self:_liftPopup(menu);self:_show(menu,true,true,nil,Vector2.new(0,-6))
 	if self._gamepadActive then self:_chooseFocus(state.List) end
 end
 
@@ -4473,7 +4490,7 @@ function Window:_colorPopup(control)
 	state.Error.Name, state.Error.Position, state.Error.Size, state.Error.ZIndex = "Validation", UDim2.fromOffset(12, 298), UDim2.fromOffset(262, 18), 103
 	local done = button(menu, "Done")
 	done.Name, done.Position, done.Size, done.BackgroundTransparency, done.ZIndex = "Done", UDim2.fromOffset(12, 322), UDim2.fromOffset(262, 26), 0, 103
-	self:_skin(done, "BackgroundColor3", "Field"); self:_skin(done, "TextColor3", "Accent"); self:_border(done, FIELD_RADIUS); self:_feedback(done)
+	self:_skin(done, "BackgroundColor3", "Field"); self:_skin(done, "TextColor3", "Text"); self:_border(done, FIELD_RADIUS); self:_feedback(done)
 	self:_connect(done.Activated, function() if self._popup == menu then self:_closeMenu() end end)
 	local function ratio(object, x, y)
 		return math.clamp((x - object.AbsolutePosition.X) / math.max(1, object.AbsoluteSize.X), 0, 1), math.clamp((y - object.AbsolutePosition.Y) / math.max(1, object.AbsoluteSize.Y), 0, 1)
@@ -4534,6 +4551,7 @@ function Window:_colorPopup(control)
 	end
 	for _, item in ipairs({ state.R, state.G, state.B }) do self:_connect(item.FocusLost, rgb) end
 	control:_render()
+	self:_liftPopup(menu)
 	self:_show(menu, true, true, nil, Vector2.new(0, -6))
 end
 
