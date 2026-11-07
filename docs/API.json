@@ -94,7 +94,7 @@
     "PearlUI.new": {
       "signature": "PearlUI.new(options)",
       "returns": "Window",
-      "contract": "Client constructor; LocalScript or explicit Parent. Enum KeyCode for constructor ToggleKey. See constructor/default tables."
+      "contract": "Client constructor; LocalScript or explicit Parent. ReplaceExisting=true retires PearlUI owners with the same Name/Parent across module reloads; false permits duplicates. Invalid options preserve the old UI; overlapping replacements error while closing. Enum KeyCode for constructor ToggleKey."
     },
     "Section.Button": {
       "signature": "Section:Button(options)",

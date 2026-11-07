@@ -24,7 +24,7 @@ See [Defaults.md](defaults.md) for constructor/control options and values.
 | `dropdown:Open()` | self | Open if enabled and in a visible window/page; multi selection stays open until Done/Close. |
 | `dropdown:SetOptions(entries, default?, silent?)` | self | Validate new options before mutation; retain valid selections unless default supplied. Third argument silent suppresses callback. |
 | `PearlUI.GetThemes()` | string[] | Ordered defensive copy: Light, Dark, Midnight, Graphite, Lavender, Rose, Matcha, Ocean, Forest. |
-| `PearlUI.new(options)` | Window | Client constructor; LocalScript or explicit Parent. Enum KeyCode for constructor ToggleKey. See constructor/default tables. |
+| `PearlUI.new(options)` | Window | Client constructor; LocalScript or explicit Parent. ReplaceExisting=true retires PearlUI owners with the same Name/Parent across module reloads; false permits duplicates. Invalid options preserve the old UI; overlapping replacements error while closing. Enum KeyCode for constructor ToggleKey. |
 | `Section:Button(options)` | Control | Text='Run', Primary=false. Callback() on activation. No persistence Id/value contract. |
 | `Section:ColorPicker(options)` | Control | Default current accent, Alpha=1. Accept Color3, HEX or {Hex,Alpha}; callback receives Color3,alpha. |
 | `Section:Detach()` | nil | Move card to a floating window, resetting card origin/canvas. Already detached reveals it. |

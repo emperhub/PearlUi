@@ -23,8 +23,9 @@ local app = loadstring(game:HttpGet("https://raw.githubusercontent.com/emperhub/
 This downloads the example and loads PearlUI from an immutable commit URL.
 It builds a Forest window, two sections and eleven controls with real callbacks:
 theme, notifications, opacity, message, menu key, motion, toast, detach/dock and
-reset. The returned app has Window, Controls and Events for inspection. Call
-`app.Window:Destroy()` before replacing this instance. No storage adapter is
+reset. The returned app has Window, Controls and Events for inspection. Rerunning
+replaces its old window automatically through the same Name and Parent. Call
+`app.Window:Destroy()` for an explicit close. No storage adapter is
 configured, so this example does not change the full demo's saved configs.
 HttpGet/loadstring preview execution is environment-specific; use the ModuleScript
 example above for Studio. Inspect the source before running a remote example.

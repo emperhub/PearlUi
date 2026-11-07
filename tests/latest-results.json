@@ -1,42 +1,57 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.2",
   "date": "2026-11-07",
   "status": "Passed",
-  "scope": "Confirmed red-button teardown; yellow-button minimize preserved",
-  "environment": "Connected Roblox client, disposable windows and mocked storage",
-  "testedCoreCommit": "bd4706abd52ba04aaa9f09e881781a0a9293652c",
-  "passed": 108,
+  "scope": "Automatic same-Name/same-Parent replacement across separate module evaluations",
+  "testedCoreCommit": "4a731f911bc3a3426734e3e24057fba3fded17e7",
+  "environment": "Connected Roblox client; isolated UI and mock persistence",
+  "passed": 379,
   "failed": 0,
   "suites": {
-    "Close.spec.luau": 20,
+    "Rerun.spec.luau": 23,
+    "Runtime.spec.luau": 50,
+    "Audit.spec.luau": 40,
     "Settings.spec.luau": 38,
-    "Runtime.spec.luau": 50
+    "Configs.spec.luau": 45,
+    "Release.spec.luau": 118,
+    "Close.spec.luau": 20,
+    "Showcase.spec.luau": 45
   },
   "coverage": [
-    "Red opens confirmation without hiding or destroying",
-    "Repeated red activation reuses pending dialog",
-    "Cancel keeps values and detached panels",
-    "Yellow minimizes and preserves recovery dock",
-    "Green maximize/restore unchanged",
-    "Confirm removes main, dock and detached panels",
-    "Configured autosave flushes once",
-    "Repeated teardown is harmless",
-    "Mobile uses shared close action"
+    "Complete old window, dock, detached-panel and listener teardown",
+    "Cross-module replacement",
+    "Configured autosave flush before new Ready load",
+    "Invalid options retain existing UI",
+    "Explicit duplicate opt-out",
+    "Separate names and parents remain independent",
+    "Unrelated same-name ScreenGui preserved",
+    "Concurrent replacement guard during a yielding save",
+    "Legacy 1.0.1 owner retires through existing Destroying handler",
+    "Existing close, config, gamepad/mobile synthetic and showcase coverage"
   ],
+  "realLoaderSmoke": {
+    "evaluations": 3,
+    "version": "1.0.2",
+    "oldOwnersDestroyed": true,
+    "oldListenersRemoved": true,
+    "remainingMainWindows": 1,
+    "remainingDocks": 1
+  },
   "local": {
-    "compiledLuauFiles": 29,
+    "compiledLuauFiles": 30,
     "compiler": "Official Luau 0.745",
     "publicAPIs": 81,
+    "themes": 9,
     "metadata": "Passed",
     "generatedSourceRoundtrips": "Passed",
-    "ci": "https://github.com/emperhub/PearlUi/actions/runs/42389178111"
+    "ci": "https://github.com/emperhub/PearlUi/actions/runs/42389998760"
   },
-  "historicalReleaseAudit": "ReleaseValidation.json (1.0.0; not rerun in full for this patch)",
   "limitations": [
+    "Full historical icon/animation/storage suite set not rerun for this patch",
     "Physical touch/controller not tested",
-    "Published DataStore not tested",
-    "Native input automation was interrupted by active manual input; no automated click result claimed"
+    "Persistence handoff uses mock adapter; published DataStore not tested",
+    "Session-only values do not transfer automatically to a fresh instance"
   ],
-  "sourceSha256": "84d15cd31b0da88bab9d8a7c17be09a54fbcb2db96d5142402ec42cca4c6b2e3",
+  "sourceSha256": "24f695ea13cb0ffbe5b6123a3cb8222d7cc1879b2b4cc288e4f37c3c896693bf",
   "sourceHashEncoding": "UTF-8 with LF line endings"
 }

@@ -17,7 +17,7 @@ CONTRACT = {
 "Section.SetIcon": ("self", "Replace section header icon, including detached panels. nil restores grip-vertical."),
 "Window.Focus": ("boolean, error?", "Open/restore the window and focus a control or owned GuiObject. Omit target to focus current popup/modal/page; requires GamepadNavigation=true."),
 "Window.Ready": ("boolean, status-or-error", "After building UI, capture defaults once, optionally create Default config and configure Adapter/Key/Load/AutoSave/Debounce/OnStatus. No adapter reports Session only. Repeated successful calls preserve current edits; failed loading can be retried."),
-"PearlUI.new": ("Window", "Client constructor; LocalScript or explicit Parent. Enum KeyCode for constructor ToggleKey. See constructor/default tables."),
+"PearlUI.new": ("Window", "Client constructor; LocalScript or explicit Parent. ReplaceExisting=true retires PearlUI owners with the same Name/Parent across module reloads; false permits duplicates. Invalid options preserve the old UI; overlapping replacements error while closing. Enum KeyCode for constructor ToggleKey."),
 "PearlUI.GetThemes": ("string[]", "Ordered defensive copy: Light, Dark, Midnight, Graphite, Lavender, Rose, Matcha, Ocean, Forest."),
 "Window.Tab": ("Tab", "String or {Name, Description, Icon}. Adds sidebar and dock entries; first tab is selected."),
 "Tab.Section": ("Section", "String or {Title, Id, Column, Icon}. Stable unique Id; Column Left/Right, alternating by default; Icon defaults grip-vertical."),

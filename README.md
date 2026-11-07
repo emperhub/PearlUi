@@ -9,7 +9,7 @@
 เริ่มที่ [คู่มือติดตั้งและใช้จริง](docs/GettingStarted.md) หรือ [Starter.client.luau](examples/Starter.client.luau)
 รองรับการใช้แบบ session ทันที; การจำค่าข้ามครั้งต้องต่อ adapter ตามคู่มือ
 
-รุ่น 1.0.1 ผ่านการตรวจปุ่มปิดและระบบที่เกี่ยวข้อง 108 รายการ ดู [ผลตรวจ](tests/CloseValidation.json)
+รุ่น 1.0.2 ผ่านการตรวจที่เกี่ยวข้อง 379 รายการ และรันตัวโหลดจริงซ้ำ 3 ครั้งเหลือหน้าต่างกับ Dock อย่างละอัน ดู [ผลตรวจ](tests/RerunValidation.json)
 ฐานรุ่น 1.0.0 ผ่าน 587 รายการและไอคอนครบ 2,029 แบบ ดู [ผลเดิมและขอบเขต](tests/ReleaseValidation.json)
 มือถือ/เกมแพดผ่านการจำลอง; ยังไม่ได้ทดสอบอุปกรณ์จริงหรือ DataStore ที่เผยแพร่แล้ว
 
@@ -25,7 +25,7 @@ local app = loadstring(game:HttpGet("https://raw.githubusercontent.com/emperhub/
 ```
 
 เปิดหน้าต่าง Forest สอง section พร้อม callback ใช้งานจริง ดู [ซอร์สตัวอย่าง](examples/Remote.client.luau)
-และ [วิธีใช้ใน Studio/สภาพแวดล้อมอื่น](docs/Integration.md) หากจะเปิดใหม่ ให้เรียก `app.Window:Destroy()` กับตัวเก่าก่อน
+และ [วิธีใช้ใน Studio/สภาพแวดล้อมอื่น](docs/Integration.md) รันซ้ำด้วยชื่อเดิมได้เลย ตัวเก่าจะถูกปิดให้อัตโนมัติ
 
 - เปิด `dist/PearlUI-Demo.rbxlx` ใน Studio เพื่อดูตัวทดสอบทั้งหมด หรือใช้ `examples/Default.client.luau` เป็นตัวเริ่มต้นสอง section
 - [ค่า Default ทุกหมวด](docs/Defaults.md) และ [ไฟล์ JSON](defaults/PearlUI.defaults.json): Light, 2 คอลัมน์, scale 1, animation 0.2s, RightShift; เดโมแยกคอนฟิกตาม GameId

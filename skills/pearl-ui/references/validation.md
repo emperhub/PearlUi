@@ -49,7 +49,19 @@ Native visual checks should include both themes and custom accents, rapid tab/op
 close/detach/dock actions, popup clipping, scroll bounds, compact viewport, disabled
 controls, preview toast and side-stowed dock recovery. Record what was actually tried.
 
-## Current 1.0.1 close-button audit
+## Current 1.0.2 rerun audit
+
+The replacement patch passed 379 assertions across eight suites: Rerun, Runtime,
+Audit, Settings, Configs, Release, Close and Showcase. A separately evaluated
+module retired the prior owner, flushed mock storage and restored values in the
+new instance. Concurrent replacement and the 1.0.1 legacy upgrade were checked.
+The real remote example was evaluated three times: one main window and one dock
+remained, with both old owners and their listeners retired. See
+[RerunValidation.json](https://github.com/emperhub/PearlUi/blob/main/tests/RerunValidation.json) for provenance and limits.
+Fixtures intentionally comparing multiple same-name windows opt out with
+ReplaceExisting=false. Do not opt out in ordinary rerun tests.
+
+## Previous 1.0.1 close-button audit
 
 The close-button patch passed 108 assertions: Close 20, Settings 38 and Runtime 50.
 Red confirms complete teardown; Cancel retains the UI and yellow only minimizes.

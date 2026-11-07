@@ -38,6 +38,9 @@ this skill remains useful when installed without a full repository checkout.
 1. Locate the PearlUI checkout or obtain the exact module version the caller
    uses. Keep the current theme, config scope, custom accent, names and saved
    profiles when updating an existing UI.
+   ReplaceExisting defaults true: keep a stable Name to retire the previous UI on
+   rerun. Different names/parents are independent. Use ReplaceExisting=false only
+   for intentional duplicates; do not delete arbitrary same-name ScreenGuis.
 2. Assign explicit, stable IDs to persisted controls and sections. Labels are
    presentation; do not use label changes as a persistence-key migration.
    Set `Persist = false` on inspectors, config pickers and temporary examples.
