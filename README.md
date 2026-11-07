@@ -2,6 +2,15 @@
 
 ## เริ่มใช้งาน / ค่า Default / สกิล
 
+ตัวอย่างเรียกจาก GitHub สำหรับ client preview ที่รองรับ HttpGet/loadstring:
+
+```lua
+local app = loadstring(game:HttpGet("https://raw.githubusercontent.com/emperhub/PearlUi/main/examples/Remote.client.luau"))()
+```
+
+เปิดหน้าต่าง Forest สอง section พร้อม callback ใช้งานจริง ดู [ซอร์สตัวอย่าง](examples/Remote.client.luau)
+และ [วิธีใช้ใน Studio/สภาพแวดล้อมอื่น](docs/Integration.md) หากจะเปิดใหม่ ให้เรียก `app.Window:Destroy()` กับตัวเก่าก่อน
+
 - เปิด `dist/PearlUI-Demo.rbxlx` ใน Studio เพื่อดูตัวทดสอบทั้งหมด หรือใช้ `examples/Default.client.luau` เป็นตัวเริ่มต้นสอง section
 - [ค่า Default ทุกหมวด](docs/Defaults.md) และ [ไฟล์ JSON](defaults/PearlUI.defaults.json): Light, 2 คอลัมน์, scale 1, animation 0.2s, RightShift; เดโมแยกคอนฟิกตาม GameId
 - [API ครบ 76 เมธอด](docs/API.md), [วิธีติดตั้ง](docs/Integration.md), [โครงสร้างและจุดระวัง](docs/Architecture.md), [วิธีตรวจสอบ](docs/ValidationGuide.md)

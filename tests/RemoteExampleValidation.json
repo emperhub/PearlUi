@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-07",
+  "version": "0.8.0",
+  "environment": "Connected Roblox client with HttpGet/loadstring",
+  "scope": "examples/Remote.client.luau downloads the published immutable core module",
+  "coreCommit": "64dcd2d72c2a662b99aba96c3fda7f0620a13016",
+  "passed": 19,
+  "failed": 0,
+  "checks": [
+    "remote module version", "two sections", "eleven controls", "theme callback",
+    "slider callback", "toggle callback", "ordinary toast respects preference",
+    "explicit preview toast", "input callback", "key callback", "motion callback",
+    "detach", "dock", "reset", "captured Forest default", "captured opacity default",
+    "captured key default", "no real persistence configured", "result label updates"
+  ],
+  "limitations": [
+    "Callbacks and public methods exercised programmatically; native pointer/keyboard gestures not tested in this run",
+    "No persistent adapter or published DataStore tested",
+    "Historical core suites not rerun"
+  ]
+}

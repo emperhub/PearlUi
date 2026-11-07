@@ -8,6 +8,23 @@ Alternatively create that ModuleScript from `src/PearlUI.luau`. Put
 LocalScript. This example has two sections, explicit defaults and stable IDs.
 No durable storage is implied. Do not run the UI on the server.
 
+## Load the example from GitHub
+
+In the compatible client preview with HttpGet/loadstring, run:
+
+```lua
+local app = loadstring(game:HttpGet("https://raw.githubusercontent.com/emperhub/PearlUi/main/examples/Remote.client.luau"))()
+```
+
+This downloads the example and loads PearlUI 0.8.0 from an immutable commit URL.
+It builds a Forest window, two sections and eleven controls with real callbacks:
+theme, notifications, opacity, message, menu key, motion, toast, detach/dock and
+reset. The returned app has Window, Controls and Events for inspection. Call
+`app.Window:Destroy()` before replacing this instance. No storage adapter is
+configured, so this example does not change the full demo's saved configs.
+HttpGet/loadstring preview execution is environment-specific; use the ModuleScript
+example above for Studio. Inspect the source before running a remote example.
+
 ## Full interactive showcase
 
 Open `dist/PearlUI-Demo.rbxlx` and Play, or map `default.project.json` with Rojo.

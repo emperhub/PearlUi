@@ -47,7 +47,7 @@
       "contract": "Replace callback; nil removes it. This is one callback slot, not an event subscription list."
     },
     "Control.Serialize": {
-      "signature": "Control:Serialize() return deepCopy(self.Value)",
+      "signature": "Control:Serialize()",
       "returns": "JSON-safe value",
       "contract": "ColorPicker returns {Hex,Alpha}; multi-dropdown returns an array. Never serialize GUI instances."
     },
@@ -192,7 +192,7 @@
       "contract": "One versioned PearlUIConfig envelope with Name, Scope and Profile, not all configs."
     },
     "Window.ExportLayout": {
-      "signature": "Window:ExportLayout() return HttpService:JSONEncode(self:GetLayout())",
+      "signature": "Window:ExportLayout()",
       "returns": "JSON string",
       "contract": "Encode GetLayout for transfer/storage."
     },

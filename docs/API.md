@@ -15,7 +15,7 @@ See [Defaults.md](Defaults.md) for constructor/control options and values.
 | `Control:Destroy()` | nil | Idempotent removal, listener/tween cleanup and Id release. Rebuild with the same Id after destruction. |
 | `Control:Get()` | value copy | Defensive copy for table values. ColorPicker overrides this to return Color3,alpha. |
 | `Control:OnChanged(callback)` | self | Replace callback; nil removes it. This is one callback slot, not an event subscription list. |
-| `Control:Serialize() return deepCopy(self.Value)` | JSON-safe value | ColorPicker returns {Hex,Alpha}; multi-dropdown returns an array. Never serialize GUI instances. |
+| `Control:Serialize()` | JSON-safe value | ColorPicker returns {Hex,Alpha}; multi-dropdown returns an array. Never serialize GUI instances. |
 | `Control:Set(value, silent)` | self | Validate, store and render. Callback fires unless silent=true; works while disabled. Destroyed controls reject setters. |
 | `Control:SetDisabled(disabled, reason)` | self | Boolean plus optional reason. Blocks native input and cancels owned popup/capture/drag; setters still work. |
 | `Control:SetLabel(value)` | self | Change presentation without changing Id; refresh search matching. |
@@ -44,7 +44,7 @@ See [Defaults.md](Defaults.md) for constructor/control options and values.
 | `Window:Destroy()` | nil | Idempotent teardown; attempt final auto-save, cancel jobs/tweens/listeners, dispose both ScreenGuis. Showcase also disposes its sample. |
 | `Window:DisablePersistence(flush)` | nil | flush=true attempts SaveSettings first; false disconnects without a write. Cancels its watcher. |
 | `Window:ExportConfig(name)` | JSON-or-nil, error? | One versioned PearlUIConfig envelope with Name, Scope and Profile, not all configs. |
-| `Window:ExportLayout() return HttpService:JSONEncode(self:GetLayout())` | JSON string | Encode GetLayout for transfer/storage. |
+| `Window:ExportLayout()` | JSON string | Encode GetLayout for transfer/storage. |
 | `Window:ExportProfile()` | JSON string | Version=1, Values, Appearance and Layout. Persist=false controls and destroyed controls are excluded. |
 | `Window:GetConfigStatus()` | table | Scope, Active, AutoLoad, Dirty, Count. Manager fields and transient tab/visibility changes do not create edited status. |
 | `Window:GetLayout()` | table | Version=1 layout with Window, Dock, Panels and ActiveTab; normalized positions, no GUI objects. |

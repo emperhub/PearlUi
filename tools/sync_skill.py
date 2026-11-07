@@ -92,7 +92,7 @@ CONTRACT = {
 
 def public_api():
     methods = {}
-    for c,sep,name,args in re.findall(r'^function (PearlUI|Window|Tab|Section|Control)([.:])([A-Za-z]\w*)\(([^\n]*)\)', SOURCE, re.M):
+    for c,sep,name,args in re.findall(r'^function (PearlUI|Window|Tab|Section|Control)([.:])([A-Za-z]\w*)\(([^)\n]*)\)', SOURCE, re.M):
         if not name.startswith('_'):
             methods[c+'.'+name] = c+sep+name+'('+args+')'
     methods.update({'Dropdown.SetOptions':'dropdown:SetOptions(entries, default?, silent?)','Dropdown.Open':'dropdown:Open()','ColorPicker.Get':'picker:Get()','ColorPicker.Open':'picker:Open()','ColorPicker.SetAlpha':'picker:SetAlpha(alpha, silent?)','ColorPicker.SetHSV':'picker:SetHSV(h, s, v, silent?)'})

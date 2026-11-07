@@ -14,6 +14,7 @@ assert set(api['methods']) == set(sync_skill.public_api()) == set(showcase['loca
 assert len(api['methods']) == showcase['publicAPIs'] == 76
 for key,signature in sync_skill.public_api().items():
     assert api['methods'][key]['signature'] == signature, key
+    assert re.fullmatch(r'[\w.:]+\([^()\n]*\)', signature), ('Malformed signature', key)
 roles = {'Window','Sidebar','Card','Text','Muted','Border','Track','Field','Hover','Accent'}
 assert len(defaults['themes']['order']) == 9
 assert set(defaults['themes']['order']) == set(defaults['themes']['palettes'])

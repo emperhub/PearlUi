@@ -3,7 +3,7 @@
   "libraryVersion": "0.8.0",
   "scope": "GitHub packaging, defaults and reusable skill; no runtime code change",
   "skillValidation": "Skill is valid!",
-  "compiledLuauFiles": 23,
+  "compiledLuauFiles": 24,
   "metadata": "PASS: 76 APIs, 9 palettes, default/source consistency and reference links",
   "build": "PASS: five-source XML and standalone artifacts rebuilt",
   "privacy": "Allowlist excludes local captures, actual settings and caches; published text scanned for local identifiers",
