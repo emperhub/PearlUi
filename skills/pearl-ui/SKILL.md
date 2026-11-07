@@ -8,7 +8,7 @@ description: "Build, integrate, configure, or debug the PearlUI Roblox Luau UI l
 Use the existing PearlUI implementation rather than inventing a different UI
 framework. The public repository is https://github.com/emperhub/PearlUi.
 The library is client-side Luau; server persistence and optional local-file
-storage are separate adapters. This skill describes version 1.0.0. In a newer
+storage are separate adapters. This skill describes version 1.0.1. In a newer
 checkout, inspect the implementation and current docs before relying on a
 version-specific detail.
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.1 — 2026-11-07
+
+- Red titlebar button asks before destroying the complete interface, floating panels and dock. Cancel keeps it open; yellow still minimizes. Desktop and touch use the same close action.
+- Repeated close requests reuse the pending confirmation. Confirmed close uses the normal teardown and configured final auto-save.
+- Added isolated close/cancel/minimize/cleanup regression coverage; see tests/CloseValidation.json for completed checks.
+
 ## 1.0.0 — 2026-11-07
 
 - Added optional Lucide icons to every control and section, plus dynamic Control/Tab/Section SetIcon methods with stable IDs and values.

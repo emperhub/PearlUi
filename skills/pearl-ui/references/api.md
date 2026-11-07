@@ -1,6 +1,6 @@
 # PearlUI API contract
 
-Version 1.0.0. All 81 public methods; underscore methods are private.
+Version 1.0.1. All 81 public methods; underscore methods are private.
 
 See [Defaults.md](defaults.md) for constructor/control options and values.
 

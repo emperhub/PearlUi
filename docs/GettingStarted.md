@@ -1,6 +1,6 @@
 # Use PearlUI in a real project
 
-PearlUI 1.0.0 is a client UI library. The application owns gameplay callbacks,
+PearlUI 1.0.1 is a client UI library. The application owns gameplay callbacks,
 permissions and its choice of storage. Core, bundled icons and session-only use
 work without executor APIs or runtime HTTP.
 

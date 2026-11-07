@@ -1,6 +1,6 @@
 # Default values
 
-Version 1.0.0. [Machine-readable catalog](defaults.json),
+Version 1.0.1. [Machine-readable catalog](defaults.json),
 [minimal runnable example](https://github.com/emperhub/PearlUi/blob/main/examples/Default.client.luau), [API contract](api.md), [production integration](getting-started.md).
 The catalog is documentation: do not pass the entire JSON object to `PearlUI.new`
 or import it as a saved config. Resolve Enum, Color3 and Parent in Luau.

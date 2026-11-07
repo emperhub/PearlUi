@@ -89,6 +89,12 @@ Reset applies the captured baseline and leaves named configs intact. Delete clea
 active/auto-load references without resetting current settings. Follow Configs.md
 for name/size/capacity limits and user-facing confirmations.
 
+The red titlebar button (including its mobile hit target) opens a close confirmation.
+Cancel, Escape or an outside tap keeps the interface alive. Confirm calls Destroy,
+removing the main window, floating panels and dock; reopening requires a fresh instance.
+Repeated red activation reuses the pending close dialog. Yellow only minimizes;
+green toggles maximize. Direct SetVisible/SetMinimized and Destroy retain their APIs.
+
 Destroy is idempotent: stop callbacks, listeners, input ownership, tween jobs,
 thumbnail responses and persistence watcher; dispose both ScreenGuis. The showcase
 also destroys its isolated sample. User-avatar requests use token guards/fallbacks.

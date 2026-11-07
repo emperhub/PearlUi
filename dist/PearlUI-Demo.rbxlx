@@ -10,14 +10,14 @@
       <Properties>
         <string name="Name">PearlUI</string>
         <ProtectedString name="Source">--!nocheck
--- PearlUI v1.0.0 | MIT License | Client-side, dependency-free UI library.
+-- PearlUI v1.0.1 | MIT License | Client-side, dependency-free UI library.
 local Players = game:GetService("Players")
 local Input = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
 
-local PearlUI = { Version = "1.0.0" }
+local PearlUI = { Version = "1.0.1" }
 local Window, Tab, Section, Control = {}, {}, {}, {}
 Window.__index, Tab.__index, Section.__index = Window, Tab, Section
 Control.__index = Control
@@ -3478,9 +3478,7 @@ function PearlUI.new(options)
 		dot.BackgroundTransparency, dot.BackgroundColor3, dot.ZIndex = 0, color, 7; corner(dot, 12)
 		self:_feedback(dot, { Radius = 12 })
 		local function activate()
-			if index == 1 then self:SetVisible(false)
-			elseif index == 2 then self:SetMinimized(true)
-			else self:SetMaximized(not self.Maximized) end
+			self:_activateChrome(index)
 		end
 		self:_connect(dot.Activated, activate)
 		local hit = button(titlebar, "")
@@ -4877,6 +4875,22 @@ function Window:Reset(scope)
 		if control and (scope == "All" or scope == control.ResetGroup) then profile.Values[id] = deepCopy(value) end
 	end
 	return self:ImportProfile(HttpService:JSONEncode(profile))
+end
+
+function Window:_activateChrome(index)
+	if self.Destroyed or self._destroying then return end
+	if index == 1 then
+		if self._closeConfirmation and self._closeConfirmation.Pending then return self._closeConfirmation end
+		self._closeConfirmation = self:Confirm({
+			Title = "Close interface?",
+			Description = "Close this interface and its dock? Run the script again to reopen it.",
+			ConfirmText = "Close UI",
+			OnCancel = function() self._closeConfirmation = nil end,
+			OnConfirm = function() self._closeConfirmation = nil; self:Destroy() end,
+		})
+		return self._closeConfirmation
+	elseif index == 2 then self:SetMinimized(true)
+	elseif index == 3 then self:SetMaximized(not self.Maximized) end
 end
 
 function Window:Confirm(options)
