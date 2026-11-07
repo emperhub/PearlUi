@@ -7,7 +7,8 @@
 เริ่มที่ [คู่มือติดตั้งและใช้จริง](docs/GettingStarted.md) หรือ [Starter.client.luau](examples/Starter.client.luau)
 รองรับการใช้แบบ session ทันที; การจำค่าข้ามครั้งต้องต่อ adapter ตามคู่มือ
 
-ผ่านการตรวจ 587 รายการ พร้อมตรวจไอคอนครบ 2,029 แบบ ดู [ผลตรวจและขอบเขต](tests/ReleaseValidation.json)
+รุ่น 1.0.1 ผ่านการตรวจปุ่มปิดและระบบที่เกี่ยวข้อง 108 รายการ ดู [ผลตรวจ](tests/CloseValidation.json)
+ฐานรุ่น 1.0.0 ผ่าน 587 รายการและไอคอนครบ 2,029 แบบ ดู [ผลเดิมและขอบเขต](tests/ReleaseValidation.json)
 มือถือ/เกมแพดผ่านการจำลอง; ยังไม่ได้ทดสอบอุปกรณ์จริงหรือ DataStore ที่เผยแพร่แล้ว
 
 รองรับ [Lucide ครบ 2,029 ไอคอน](docs/Icons.md) ในตัวไลบรารี ใช้ `Icon = "shield-check"`

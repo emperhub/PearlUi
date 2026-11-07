@@ -1,0 +1,42 @@
+{
+  "version": "1.0.1",
+  "date": "2026-11-07",
+  "status": "Passed",
+  "scope": "Confirmed red-button teardown; yellow-button minimize preserved",
+  "environment": "Connected Roblox client, disposable windows and mocked storage",
+  "testedCoreCommit": "bd4706abd52ba04aaa9f09e881781a0a9293652c",
+  "passed": 108,
+  "failed": 0,
+  "suites": {
+    "Close.spec.luau": 20,
+    "Settings.spec.luau": 38,
+    "Runtime.spec.luau": 50
+  },
+  "coverage": [
+    "Red opens confirmation without hiding or destroying",
+    "Repeated red activation reuses pending dialog",
+    "Cancel keeps values and detached panels",
+    "Yellow minimizes and preserves recovery dock",
+    "Green maximize/restore unchanged",
+    "Confirm removes main, dock and detached panels",
+    "Configured autosave flushes once",
+    "Repeated teardown is harmless",
+    "Mobile uses shared close action"
+  ],
+  "local": {
+    "compiledLuauFiles": 29,
+    "compiler": "Official Luau 0.745",
+    "publicAPIs": 81,
+    "metadata": "Passed",
+    "generatedSourceRoundtrips": "Passed",
+    "ci": "https://github.com/emperhub/PearlUi/actions/runs/42389178111"
+  },
+  "historicalReleaseAudit": "ReleaseValidation.json (1.0.0; not rerun in full for this patch)",
+  "limitations": [
+    "Physical touch/controller not tested",
+    "Published DataStore not tested",
+    "Native input automation was interrupted by active manual input; no automated click result claimed"
+  ],
+  "sourceSha256": "84d15cd31b0da88bab9d8a7c17be09a54fbcb2db96d5142402ec42cca4c6b2e3",
+  "sourceHashEncoding": "UTF-8 with LF line endings"
+}

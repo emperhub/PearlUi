@@ -49,7 +49,15 @@ Native visual checks should include both themes and custom accents, rapid tab/op
 close/detach/dock actions, popup clipping, scroll bounds, compact viewport, disabled
 controls, preview toast and side-stowed dock recovery. Record what was actually tried.
 
-## Current 1.0.0 evidence
+## Current 1.0.1 close-button audit
+
+The close-button patch passed 108 assertions: Close 20, Settings 38 and Runtime 50.
+Red confirms complete teardown; Cancel retains the UI and yellow only minimizes.
+Desktop and touch hit targets share one action. See
+[CloseValidation.json](../tests/CloseValidation.json) for scope and provenance.
+The full 1.0.0 audit below is historical for this patch, not a fresh full rerun.
+
+## Previous 1.0.0 evidence
 
 The release audit passed 587 assertions across 16 suites plus the separate Icons
 construction suite (2,029 icons / 301 runtime aliases). See
