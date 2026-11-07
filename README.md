@@ -1,5 +1,8 @@
 # PearlUI
 
+รองรับ [Lucide ครบ 2,029 ไอคอน](docs/Icons.md) ในตัวไลบรารี ใช้ `Icon = "shield-check"`
+หรือชื่อไอคอนอื่นได้ทันที ดูรายชื่อใน `PearlUI.Icons` และ alias ใน `PearlUI.IconAliases`
+
 ## เริ่มใช้งาน / ค่า Default / สกิล
 
 ตัวอย่างเรียกจาก GitHub สำหรับ client preview ที่รองรับ HttpGet/loadstring:

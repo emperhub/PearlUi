@@ -1,14 +1,14 @@
 {
   "date": "2026-11-07",
   "libraryVersion": "0.8.0",
-  "scope": "Dock title containment and readable foreground; public API and config schema unchanged",
+  "scope": "Complete Lucide catalog, lazy geometry and existing tab Icon integration",
   "skillValidation": "Skill is valid!",
-  "compiledLuauFiles": 24,
+  "compiledLuauFiles": 25,
   "metadata": "PASS: 76 APIs, 9 palettes, default/source consistency and reference links",
   "build": "PASS: five-source XML and standalone artifacts rebuilt",
   "privacy": "Allowlist excludes local captures, actual settings and caches; published text scanned for local identifiers",
-  "runtimeSuitesRerun": [
-    "Dock.spec.luau"
-  ],
-  "historicalCoreSuitesRerun": false
+  "runtimeSuitesRerun": [],
+  "historicalCoreSuitesRerun": false,
+  "icons": 2029,
+  "upstreamAliases": 296
 }

@@ -17,6 +17,8 @@ version-specific detail.
 - Adding controls or wiring callbacks: [API contract](references/api.md).
 - Choosing initial values: [default values](references/defaults.md) and the
   machine-readable [defaults catalog](references/defaults.json).
+- Choosing icons: [complete Lucide pack](references/icons.md). Tab Icon accepts
+  all 2,029 canonical names and upstream aliases; PearlUI.Icons lists names.
 - Integrating into Studio, a local preview or an existing project:
   [integration](references/integration.md).
 - Configs, JSON transfers, auto-load or durable storage:

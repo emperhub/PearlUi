@@ -99,3 +99,7 @@ Accepted window constructor options: Title, Name, Theme, Accent (Color3), Parent
 Applications may deliberately update ReduceMotion, AnimationSpeed and NotificationsEnabled, as the supplied demo does. Read Theme, Palette, Scale, Columns, WindowSize and ToggleKey for current state; prefer methods for geometry/theme changes.
 
 Control common options: Id, Label, Description, Callback, Visible, Disabled, DisabledReason, Persist and ResetGroup. Use explicit section Id/Column to preserve existing config layout.
+
+## Icon catalogs
+
+`PearlUI.Icons` is a frozen sorted array of all 2,029 canonical Lucide names. `PearlUI.IconAliases` is a frozen alias map. These are data properties, not additional methods. Use a name in `window:Tab({Name="Defense", Icon="shield-check"})`; see [Icons.md](Icons.md) for aliases, filtering and the pinned source revision.

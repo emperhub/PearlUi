@@ -50,4 +50,12 @@ for file in [root/'skills/pearl-ui/SKILL.md',*refs.glob('*.md'),* (root/'docs').
             assert (file.parent/target.split('#')[0]).exists(), (file,target)
 skill=read('skills/pearl-ui/SKILL.md')
 assert '[TODO' not in skill and 'name: pearl-ui' in skill
-print('PASS: 76 API contracts, 9 complete palettes, factory defaults, showcase coverage and portable skill links')
+catalog=json.loads(read('assets/lucide/catalog.json'))
+aliases=json.loads(read('assets/lucide/aliases.json'))
+packed=source.split('local ICONS = {',1)[1].split('local ICON_ALIASES = {',1)[0]
+names=re.findall(r'^\t\["([^"]+)"\] = ',packed,re.M)
+assert len(names)==len(set(names))==catalog['count']==2029
+assert set(names)==set(catalog['icons'])=={f.stem for f in (root/'assets/lucide').glob('*.svg')}
+assert len(aliases)==296 and all(n in catalog['icons'] for n in aliases.values())
+assert (root/'skills/pearl-ui/references/icons.md').is_file()
+print('PASS: 76 API contracts, 9 palettes, 2,029 icons / 296 aliases, defaults, showcase and skill links')

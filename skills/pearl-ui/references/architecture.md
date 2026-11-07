@@ -15,6 +15,13 @@ Version 0.8.0. These details guide maintenance; app integrations use public API.
 
 ## Rendering and animation
 
+The complete Lucide catalog is generated from the pinned SVG snapshot by
+tools/build_icons.py. Geometry is packed as per-icon JSON strings to stay within
+Luau constant/register limits; ICON_CACHE decodes only requested icons. Never
+eagerly build the 2,029 icons into GUI instances. Frozen PearlUI.Icons and
+PearlUI.IconAliases expose names without exposing mutable geometry. Unknown
+names resolve to the existing settings-2 fallback. See Icons.md for regeneration.
+
 Native transparency-property fades retain canonical alpha values. Interrupted
 show/hide transitions must settle before reparenting; do not capture a half-faded
 alpha as the new baseline. Docking returns the card synchronously and fades the

@@ -1,5 +1,12 @@
 # Changelog
 
+## Lucide catalog — 2026-11-07
+
+- Bundled all 2,029 canonical icons and 296 upstream aliases at the existing pinned Lucide revision.
+- Added frozen PearlUI.Icons / PearlUI.IconAliases catalogs, normalized names, and accurate fallback attributes; existing tab Icon use remains compatible.
+- Decode/cache geometry only on use, avoiding thousands of unused shape tables and native UI instances.
+- Extended the offline SVG compiler for compact arc flags, smooth curves, ellipses, lines, polylines and polygons; retained upstream license notices.
+
 ## Maintenance — 2026-11-07
 
 - Fixed long application titles overflowing the Dock restore button: one-line ellipsis, 10px inner padding and clipping keep text inside the 142px button.
