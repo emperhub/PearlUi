@@ -491,11 +491,7 @@ end
 -- Fade native properties rather than allocate a CanvasGroup texture while resizing.
 function Window:_show(root, shown, force, finished, offset)
 	if self.Destroyed then return end
-	if root == self._popup and not root:GetAttribute("PearlPopupLayer") then
-		root:SetAttribute("PearlPopupLayer", true)
-		local objects = root:GetDescendants(); table.insert(objects, root)
-		for _, object in ipairs(objects) do if object:IsA("GuiObject") then object.ZIndex += 9900 end end
-	end
+	if root == self._popup then self:_liftPopup(root) end
 	local overlapping = {}
 	for other in pairs(self._visibility) do
 		if other ~= root and (root:IsDescendantOf(other) or other:IsDescendantOf(root)) then table.insert(overlapping, other) end

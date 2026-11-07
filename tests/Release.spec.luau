@@ -97,6 +97,8 @@ return function(PearlUI)
 		w:Focus(slider)
 		local color=controls[4];color:Open();local editor=color._menu
 		check("color input is above its dismiss blocker",editor.SV.ZIndex>w.MenuDismiss.ZIndex and editor.Alpha.ZIndex>w.MenuDismiss.ZIndex)
+		local popupZ=editor.Frame.ZIndex;w:_liftPopup(editor.Frame);w:_show(editor.Frame,true,true)
+		check("popup layers remain stable across animation and raising",editor.Frame.ZIndex==popupZ and popupZ<20000)
 		Gui.SelectedObject=editor.Alpha
 		local _,alpha=color:Get();w:_gamepadInput(key(Enum.KeyCode.DPadLeft),false)
 		check("gamepad adjusts color alpha",math.abs(select(2,color:Get())-math.max(0,alpha-.05))<.001)
