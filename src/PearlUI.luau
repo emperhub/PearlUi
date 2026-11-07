@@ -3316,7 +3316,7 @@ function Window:_endPointer(input)
 	if owns(self._colorDrag) then self._colorDrag = nil end
 end
 
-function Window:_layout(animate, viewportOverride)
+function Window:_layout(animate, viewportOverride, preferredInputOverride)
 	if self.Destroyed then return end
 	self:_settleVisibility(self.Main)
 	self:_stop(self.Main)
@@ -3324,11 +3324,12 @@ function Window:_layout(animate, viewportOverride)
 	local viewport = viewportOverride or self.Gui.AbsoluteSize
 	if viewport.X < 1 or viewport.Y < 1 then return end
 	local fit = math.min((viewport.X - 24) / self.WindowSize.X, (viewport.Y - 24) / self.WindowSize.Y)
-	local mobile = self.Responsive and (viewport.X < 640 or (Input.PreferredInput == Enum.PreferredInput.Touch and viewport.Y < 500))
+	local preferred = preferredInputOverride or Input.PreferredInput
+	local mobile = self.Responsive and (viewport.X < 640 or (preferred == Enum.PreferredInput.Touch and viewport.Y < 500))
 	if mobile and not self._mobileLayout then self._desktopPosition = self.Main.Position
 	elseif not mobile and self._mobileLayout and self._desktopPosition then self.Main.Position = self._desktopPosition end
 	self._mobileLayout = mobile
-	self._touchTargets = mobile or Input.PreferredInput == Enum.PreferredInput.Touch
+	self._touchTargets = mobile or preferred == Enum.PreferredInput.Touch
 	self._actualScale = mobile and math.clamp(self.Scale,0.85,1.1) or math.max(0.2, math.min(self.Scale, fit))
 	self.UIScale.Scale = self._actualScale
 	self._rootWidth, self._rootHeight = viewport.X / self._actualScale, viewport.Y / self._actualScale
@@ -3570,8 +3571,15 @@ function PearlUI.new(options)
 	self:_connect(Input.InputChanged, function(input) self:_updatePointer(input) end)
 	self:_connect(Input:GetPropertyChangedSignal("PreferredInput"), function() self:_layout() end)
 	self:_connect(Input:GetPropertyChangedSignal("OnScreenKeyboardVisible"), function()
+		self._keyboardInset=Input.OnScreenKeyboardVisible and Input.OnScreenKeyboardSize.Y/(self._actualScale or 1) or 0
+		for _,tab in ipairs(self.Tabs) do tab:_queueLayout() end
 		local focused = Input:GetFocusedTextBox()
-		if focused and self:_ownsFocus(focused) then self:_scrollTo(focused) end
+		if focused and self:_ownsFocus(focused) then
+			if self._popup and focused:IsDescendantOf(self._popup) then
+				self:_stop(self._popup,"Position");self._popup.Position=UDim2.fromOffset(self._popup.Position.X.Offset,8)
+			end
+			self:_later(.1,function() if not self.Destroyed and focused.Parent then self:_scrollTo(focused) end end)
+		end
 	end)
 	self:_connect(Input.InputEnded, function(input) self:_endPointer(input) end)
 	self:_connect(self.Gui:GetPropertyChangedSignal("AbsoluteSize"), function() self:_layout() end)
@@ -3803,7 +3811,7 @@ function Tab:_arrange()
 			heights[column] += (item == section.Frame and section:_measureHeight() or 42) + 16
 		end
 	end
-	self.Page.CanvasSize = UDim2.fromOffset(0, math.max(0, math.max(heights[1], heights[2]) - 16) + 4)
+	self.Page.CanvasSize = UDim2.fromOffset(0, math.max(0, math.max(heights[1], heights[2]) - 16) + 4 + (window._keyboardInset or 0))
 end
 
 function Section:_layoutControls(width)
@@ -3812,12 +3820,13 @@ function Section:_layoutControls(width)
 end
 
 function Section:_measureHeight()
-	local height = 54
+	local height = self.Header.Size.Y.Offset + 12
 	for _, control in ipairs(self.Controls) do if not control.Destroyed and control.Row.Visible then height += control.Row.Size.Y.Offset end end
 	return height
 end
 
 function Window:Tab(options)
+	assert(not self.Destroyed, "Window has been destroyed")
 	if type(options) == "string" then options = { Name = options } end
 	options = options or {}
 	local tab = setmetatable({ Window = self, Name = options.Name or "Tab", Description = options.Description or "", Sections = {} }, Tab)
@@ -3901,6 +3910,7 @@ function Window:_filter(query)
 		for _, control in ipairs(section.Controls) do
 			local matches = control.Visible and not control.Destroyed and (sectionMatches or string.find(string.lower(control.Label), query, 1, true) ~= nil)
 			control.Row.Visible = matches
+			if not matches then control:_cancelInteraction() end
 			control.Separator.Visible = matches
 			any = any or matches
 			if matches then count += 1; lastVisible = control end
@@ -3967,6 +3977,7 @@ function Tab:Section(options)
 	window:_feedback(section.Placeholder, { NoScale = true, Radius = 9 })
 	window:_connect(section.Placeholder.Activated, function() section:Reveal() end)
 	table.insert(self.Sections, section); table.insert(window.Sections, section)
+	window:_responsiveChrome(window._mobileLayout)
 	self:_queueLayout()
 	return section
 end
@@ -4010,7 +4021,7 @@ function Section:Detach()
 	end
 	window:_settleVisibility(self.Float)
 	self:_layoutControls(376)
-	self.Float.Size = UDim2.fromOffset(410, math.min(window._rootHeight - 30, math.max(260, self:_measureHeight() + 100)))
+	self.Float.Size = UDim2.fromOffset(math.min(410,window._rootWidth-16), math.min(window._rootHeight - 30, math.max(260, self:_measureHeight() + 100)))
 	local count = 0
 	for _, section in ipairs(window.Sections) do if section ~= self and section.Detached then count += 1 end end
 	self.Float.Position = self._lastFloatPosition or UDim2.fromOffset(window.Main.Position.X.Offset + 54 + (count % 6) * 32, window.Main.Position.Y.Offset + 60 + (count % 6) * 28)
@@ -4192,13 +4203,16 @@ end
 function Window:_openControlPopup(control, name, width, height, arrow)
 	self:_cancelInteractions()
 	local anchor = control.Field
+	local popupScale = math.min(1,(self._rootWidth-16)/width,(self._rootHeight-16)/height)
+	local visibleWidth,visibleHeight = width*popupScale,height*popupScale
 	local position = (anchor.AbsolutePosition - self.Root.AbsolutePosition) / self._actualScale
 	local below = position.Y + anchor.AbsoluteSize.Y / self._actualScale + 5
-	local y = below + height > self._rootHeight - 8 and position.Y - height - 5 or below
+	local y = below + visibleHeight > self._rootHeight - 8 and position.Y - visibleHeight - 5 or below
 	local popup = make("Frame", {
-		Name = name, Position = UDim2.fromOffset(math.clamp(position.X, 8, math.max(8, self._rootWidth - width - 8)), math.max(8, y)),
+		Name = name, Position = UDim2.fromOffset(math.clamp(position.X, 8, math.max(8, self._rootWidth - visibleWidth - 8)), math.clamp(y,8,math.max(8,self._rootHeight-visibleHeight-8))),
 		Size = UDim2.fromOffset(width, height), BorderSizePixel = 0, ZIndex = 101,
 	}, self.Root)
+	if popupScale < 1 then make("UIScale",{Name="PopupFit",Scale=popupScale},popup) end
 	self:_surface(popup, "Card"); self:_border(popup, 11); self:_selectionGroup(popup)
 	self._popup, self._popupAnchor, self._popupArrow, self._popupOwner = popup, anchor, arrow, control
 	if arrow then self:_tween(arrow, { Rotation = 180 }, 0.7) end
@@ -4274,10 +4288,12 @@ function Window:_dropdownPopup(control)
 		state.Page=math.clamp(state.Page,1,state.PageCount)
 		state.Empty.Visible=#state.Matches==0
 		local start=(state.Page-1)*control.PageSize+1
-		for index=start,math.min(#state.Matches,start+control.PageSize-1) do
-			local value=state.Matches[index]
+		local displayed = paged and state.Matches or control.Options
+		for index=start,math.min(#displayed,start+control.PageSize-1) do
+			local value=displayed[index]
 			local row=button(state.List,value)
 			row.Name,row.Size,row.LayoutOrder,row.ZIndex="Option_"..value,UDim2.new(1,-4,0,rowHeight),index,103
+			row.Visible = state.Query=="" or value:lower():find(state.Query,1,true) ~= nil
 			row.TextXAlignment,row.TextTruncate=Enum.TextXAlignment.Left,Enum.TextTruncate.AtEnd
 			padding(row,10,0);row:FindFirstChildOfClass("UIPadding").PaddingRight=UDim.new(0,30);corner(row,6)
 			self:_skin(row,"TextColor3","Text");self:_skin(row,"BackgroundColor3","Hover");self:_feedback(row,{NoScale=true,Radius=6})
@@ -4305,9 +4321,11 @@ function Window:_dropdownPopup(control)
 		if refocus then self:_chooseFocus(state.List) end
 	end
 	state.RenderPage=rebuild
+	state.SetPage=function(page) state.Page=math.clamp(page,1,state.PageCount);rebuild() end
 	local function filter()
 		state.Matches={}
 		local query=state.Search and state.Search.Text:lower() or ""
+		state.Query=query
 		for _,value in ipairs(control.Options) do if query=="" or value:lower():find(query,1,true) then table.insert(state.Matches,value) end end
 		state.Page=1;rebuild()
 	end
@@ -4485,6 +4503,17 @@ function Window:_colorPopup(control)
 				entry[2](input.Position.X, input.Position.Y)
 			end
 		end)
+	end
+	if self._touchTargets then
+		for _,entry in ipairs({{170,updateHue,"HueTouch"},{214,updateAlpha,"AlphaTouch"}}) do
+			local hit=button(menu,"")
+			hit.Name,hit.Position,hit.Size,hit.ZIndex=entry[3],UDim2.fromOffset(12,entry[1]),UDim2.fromOffset(262,44),108
+			self:_connect(hit.InputBegan,function(input)
+				if input.UserInputType==Enum.UserInputType.Touch and self._popup==menu and control:CanInteract() then
+					self._colorDrag={input=input,control=control,update=entry[2],kind=entry[3]};entry[2](input.Position.X,input.Position.Y)
+				end
+			end)
+		end
 	end
 	self:_connect(state.Hex.FocusLost, function()
 		if self._popup ~= menu or not control:CanInteract() then return end
@@ -5361,10 +5390,15 @@ function Window:_scrollTo(object)
 	local parent = object.Parent
 	while parent and parent ~= self.Root and parent ~= self.DockRoot do
 		if parent:IsA("ScrollingFrame") and parent.ScrollingDirection ~= Enum.ScrollingDirection.X then
-			local scale = self._actualScale or 1
+			local popupFit=self._popup and object:IsDescendantOf(self._popup) and self._popup:FindFirstChild("PopupFit")
+			local scale = (self._actualScale or 1)*(popupFit and popupFit.Scale or 1)
 			local top = (object.AbsolutePosition.Y - parent.AbsolutePosition.Y) / scale
 			local bottom = top + object.AbsoluteSize.Y / scale
 			local height = parent.AbsoluteSize.Y / scale
+			if Input.OnScreenKeyboardVisible then
+				local inset=GuiService:GetGuiInset()
+				height=math.min(height,math.max(1,(Input.OnScreenKeyboardPosition.Y-inset.Y-parent.AbsolutePosition.Y)/scale))
+			end
 			local delta = top < 4 and top - 4 or (bottom > height - 4 and bottom - height + 4 or 0)
 			local limit = math.max(0, (parent.AbsoluteCanvasSize.Y - parent.AbsoluteSize.Y) / scale)
 			if delta ~= 0 then parent.CanvasPosition = Vector2.new(parent.CanvasPosition.X, math.clamp(parent.CanvasPosition.Y + delta, 0, limit)) end
@@ -5486,6 +5520,14 @@ function Window:_responsiveChrome(mobile)
 		tab.Label.Visible = not mobile
 		tab.Button.Size = UDim2.new(1,0,0,mobile and 48 or 39)
 		tab.Icon.Position = UDim2.fromOffset(mobile and 14 or 12,mobile and 14 or 9)
+	end
+	for _,section in ipairs(self.Sections) do
+		local touch=self._touchTargets
+		section.Header.Size=UDim2.new(1,0,0,touch and 48 or 42)
+		local detach=section.Header.Detach
+		detach.Position,detach.Size=UDim2.new(1,touch and -48 or -38,0,touch and 2 or 7),UDim2.fromOffset(touch and 44 or 28,touch and 44 or 28)
+		detach.Icon.Position=UDim2.fromOffset(touch and 12 or 4,touch and 12 or 4)
+		if section.Float and mobile then section.Float.Size=UDim2.fromOffset(math.min(410,self._rootWidth-16),math.min(section.Float.Size.Y.Offset,self._rootHeight-16)) end
 	end
 	self.Notifications.Position = UDim2.new(1,mobile and -8 or -24,1,mobile and -8 or -24)
 	self.Notifications.Size = UDim2.fromOffset(math.min(310,self._rootWidth-16),300)
