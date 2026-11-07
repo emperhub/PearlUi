@@ -349,6 +349,8 @@ python tools/build.py
 
 ทุกปุ่มรีเซ็ตด้านบนต้องยืนยันก่อนนำค่าไปใช้ ยกเลิกได้ด้วย Cancel, Escape หรือคลิกนอกกล่อง และไม่ลบ named profiles
 
+https://emperhub.github.io/PearlUi/#/configs
+
 API หลัก: `CaptureDefaults()`, `RequestReset(scope)`, `Reset(scope)`, `Confirm(options)`, `ConfigurePersistence(options)`, `SaveSettings()`, `LoadSettings()`, `GetPersistenceStatus()` และ `DisablePersistence(flush)`
 
 อ่านรายละเอียดอะแดปเตอร์ การสำรองไฟล์ และการตั้งค่า DataStore ใน [docs/Persistence.md](docs/Persistence.md)
