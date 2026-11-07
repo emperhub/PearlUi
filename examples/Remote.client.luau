@@ -1,6 +1,6 @@
 --!nocheck
 -- Client preview with HttpGet/loadstring; use Default.client.luau in Studio.
-local SOURCE_URL = "https://raw.githubusercontent.com/emperhub/PearlUi/64dcd2d72c2a662b99aba96c3fda7f0620a13016/src/PearlUI.luau"
+local SOURCE_URL = "https://raw.githubusercontent.com/emperhub/PearlUi/392ffca827104837c8899d816e75e6eebd8835c3/src/PearlUI.luau"
 local ok, source = pcall(function() return game:HttpGet(SOURCE_URL) end)
 assert(ok and type(source) == "string" and #source > 0, "Could not download PearlUI: " .. tostring(source))
 assert(type(loadstring) == "function", "This preview needs loadstring; use the Studio ModuleScript example otherwise")
