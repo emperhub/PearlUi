@@ -1,7 +1,12 @@
 # PearlUI
 
-📖 [คู่มือออนไลน์ — PearlUI Documentation](https://emperhub.github.io/PearlUi/)
-มีเมนูแยกหมวด ค้นหา API ตัวอย่างพร้อมคัดลอก และคลังไอคอน
+## คู่มือออนไลน์
+
+**[เปิดเว็บคู่มือ PearlUI →](https://emperhub.github.io/PearlUi/)**
+
+อ่านได้ทันทีโดยไม่ต้องล็อกอิน มีเมนูแยกหมวด ค้นหา API ตัวอย่างพร้อมคัดลอก และคลังไอคอน
+
+[เริ่มใช้งาน](https://emperhub.github.io/PearlUi/#/getting-started) · [API Reference](https://emperhub.github.io/PearlUi/#/api) · [ไอคอน](https://emperhub.github.io/PearlUi/#/icons) · [คอนฟิก](https://emperhub.github.io/PearlUi/#/configs)
 
 **1.0.2** พร้อมไอคอนทุกคอนโทรล เลย์เอาต์มือถือ การนำทางเกมแพด Dropdown แบบแบ่งหน้า และ Ready สำหรับตั้งค่าเริ่มต้น/การบันทึก
 
